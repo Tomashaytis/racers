@@ -1,0 +1,12 @@
+.score-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.score {
+    width: 100px;
+}
+
+.place {
+    width: 100px;
+}

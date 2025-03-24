@@ -1,38 +1,73 @@
-.App {
-  text-align: center;
+main {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 18px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.main-header {
+    text-align: center;
+    margin: 10px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.result-header {
+    text-align: center;
+    margin: 5px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.main-container {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-rows: auto auto;
+    grid-gap: 10px;
 }
 
-.App-link {
-  color: #61dafb;
+.game-results {
+    grid-column: 2;
+    grid-row: 1;
+    background-color: antiquewhite;
+    width: auto;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 7px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.game-field {
+    background-color: antiquewhite;
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    justify-content: center;
+    border: 2px solid black;
+    border-radius: 10px;
+    padding: 7px;
+}
+
+.panels {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.game-player-panel {
+    display: flex;
+    align-items: center;
+    background-color: antiquewhite;
+    padding: 7px;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+.game-score-panel {
+    background-color: antiquewhite;
+    padding: 7px;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+.game-info-panel {
+    background-color: antiquewhite;
+    padding: 7px;
+    border: 2px solid black;
+    border-radius: 10px;
 }

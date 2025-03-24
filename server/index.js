@@ -24,7 +24,7 @@ const io = new Server(server, {
   }
 });
 
-io.on('connection', (socket) => {
+/*io.on('connection', (socket) => {
   console.log('A client connected:', socket.id);
 
   socket.on('sendMessage', (data) => {
@@ -36,7 +36,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('A client disconnected:', socket.id);
   });
-});
+});*/
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
