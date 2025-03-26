@@ -1,8 +1,8 @@
 import './Field.css';
 
-function Field() {
+function Field(probs) {
     return (
-        <canvas></canvas>
+        <canvas width={probs.width} height={probs.height}></canvas>
     )
 }
 

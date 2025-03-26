@@ -4,17 +4,28 @@
 }
 
 .input-name {
+    background-color: white;
     width: 120px; 
+    height: 20px;
     margin-right: 10px;
     border: 2px solid black;
     border-radius: 5px;
 }
 
+.input-name:disabled {
+    background-color: #F7F9F9;
+}
+
 .select-color {
+    background-color: white;
     width: 150px; 
     margin-right: 10px;
     border: 2px solid black;
     border-radius: 5px;
+}
+
+.select-color:disabled {
+    background-color: #F7F9F9;
 }
 
 .join-button {
@@ -24,3 +35,6 @@
     border-radius: 5px;
 }
 
+.join-button:hover {
+    background-color: teal;
+}
