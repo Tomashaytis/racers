@@ -3,8 +3,9 @@ const config = {
     PORT: 5000,
     MAX_WATCHERS_COUNT: 20,
     MAX_PLAYERS_COUNT: 10,
-    SEND_INTERVAL: 5000,
+    SEND_INTERVAL: 100,
     MAX_NAME_LENGTH: 10,
+    BOLID_SIZE: 3,
     WIDTH: 800,
     HEIGHT: 450,
     COLORS: [

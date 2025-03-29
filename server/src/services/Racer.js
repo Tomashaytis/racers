@@ -1,13 +1,13 @@
 class Racer {
-    constructor(name, color, width, height, avoidedPoints = [], startPoint = null, startDirection = null) {
+    constructor(name, color, bolidSize, width, height, avoidedPoints = [], startPoint = null, startDirection = null) {
         this._name = name;
         this._color = color;
+        this._bolidSize = bolidSize;
         this._score = 0;
         this._width = width;
         this._height = height;
         this._physicalPoints = [];
         
-        this._bolidSize = 4;
         this._bolideHeadLength = this._bolidSize * 8;
         this._bolideFrontLength = this._bolidSize * 6;
         this._bolideMiddleLength = this._bolidSize * 2;
@@ -21,10 +21,13 @@ class Racer {
 
         if (startPoint == null) {
             while (true) {
-                this._currentPoint = [this.getRandomInt(this._bolidRadius, width - this._bolidRadius), this.getRandomInt(this._bolidRadius, height - this._bolidRadius)];
-                success = true
+                this._currentPoint = {
+                    x: this.getRandomInt(this._bolidRadius, width - this._bolidRadius), 
+                    y: this.getRandomInt(this._bolidRadius, height - this._bolidRadius),
+                };
+                let success = true
                 for (let point of avoidedPoints) {
-                    if (distance(point, this._currentPoint) < this._bolidRadius) {
+                    if (this.distance(point, this._currentPoint) < this._bolidRadius) {
                         success = false;
                         break;
                     }
@@ -38,7 +41,10 @@ class Racer {
         }
 
         if (startDirection == null) {
-            this._direction = [Math.random() - 0.5, Math.random() - 0.5];
+            this._direction = {
+                x: Math.random() - 0.5, 
+                y: Math.random() - 0.5,
+            };
         } else {
             this._direction = startPoint;
         }
@@ -48,51 +54,58 @@ class Racer {
     }
 
     normilizeDirection() {
-        const length = length(this._direction);
-        this._direction = [this._direction[0] / length, this._direction[1] / length];
+        const length = this.length(this._direction);
+        this._direction = {
+            x: this._direction.x / length, 
+            y: this._direction.y / length,
+        };
     }
 
     generatePhysicalPoints() {
-        const directionNormal = [this._direction[1], -this._direction[0]];
+        const directionNormal = {
+            x: this._direction.y, 
+            y: -this._direction.x,
+        };
         this._physicalPoints = [];
-        console.log(this._physicalPoints);
 
-        this._physicalPoints.push([
-            this._currentPoint[0] + this._direction[0] * this._bolideHeadLength, 
-            this._currentPoint[1] + this._direction[1] * this._bolideHeadLength
-        ]);
-        console.log(this._currentPoint, this._direction, this._bolideHeadLength);
-        this._physicalPoints.push([
-            this._currentPoint[0] + this._direction[0] * this._bolideFrontLength + directionNormal[0] * this._bolideFrontWidth, 
-            this._currentPoint[1] + this._direction[1] * this._bolideFrontLength + directionNormal[1] * this._bolideFrontWidth
-        ]);
-        this._physicalPoints.push([
-            this._currentPoint[0] - this._direction[0] * this._bolideMiddleLength + directionNormal[0] * this._bolideMiddleWidth, 
-            this._currentPoint[1] - this._direction[1] * this._bolideMiddleLength + directionNormal[1] * this._bolideMiddleWidth
-        ]);
-        this._physicalPoints.push([
-            this._currentPoint[0] - this._direction[0] * this._bolideBackLength + directionNormal[0] * this._bolideBackWidth, 
-            this._currentPoint[1] - this._direction[1] * this._bolideBackLength + directionNormal[1] * this._bolideBackWidth
-        ]);
-        this._physicalPoints.push([
-            this._currentPoint[0] - this._direction[0] * this._bolideTailLength, 
-            this._currentPoint[1] - this._direction[1] * this._bolideTailLength
-        ]);
-        this._physicalPoints.push([
-            this._currentPoint[0] - this._direction[0] * this._bolideBackLength - directionNormal[0] * this._bolideBackWidth, 
-            this._currentPoint[1] - this._direction[1] * this._bolideBackLength - directionNormal[1] * this._bolideBackWidth
-        ]);
-        this._physicalPoints.push([
-            this._currentPoint[0] - this._direction[0] * this._bolideMiddleLength - directionNormal[0] * this._bolideMiddleWidth, 
-            this._currentPoint[1] - this._direction[1] * this._bolideMiddleLength - directionNormal[1] * this._bolideMiddleWidth
-        ]);
-        this._physicalPoints.push([
-            this._currentPoint[0] + this._direction[0] * this._bolideFrontLength - directionNormal[0] * this._bolideFrontWidth, 
-            this._currentPoint[1] + this._direction[1] * this._bolideFrontLength - directionNormal[1] * this._bolideFrontWidth
-        ]);
+        this._physicalPoints.push({
+            x: this._currentPoint.x + this._direction.x * this._bolideHeadLength, 
+            y: this._currentPoint.y + this._direction.y * this._bolideHeadLength,
+        });
+        this._physicalPoints.push({
+            x: this._currentPoint.x + this._direction.x * this._bolideFrontLength + directionNormal.x * this._bolideFrontWidth, 
+            y: this._currentPoint.y + this._direction.y * this._bolideFrontLength + directionNormal.y * this._bolideFrontWidth,
+        });
+        this._physicalPoints.push({
+            x: this._currentPoint.x - this._direction.x * this._bolideMiddleLength + directionNormal.x * this._bolideMiddleWidth, 
+            y: this._currentPoint.y - this._direction.y * this._bolideMiddleLength + directionNormal.y * this._bolideMiddleWidth,
+        });
+        this._physicalPoints.push({
+            x: this._currentPoint.x - this._direction.x * this._bolideBackLength + directionNormal.x * this._bolideBackWidth, 
+            y: this._currentPoint.y - this._direction.y * this._bolideBackLength + directionNormal.y * this._bolideBackWidth,
+        });
+        this._physicalPoints.push({
+            x: this._currentPoint.x - this._direction.x * this._bolideTailLength, 
+            y: this._currentPoint.y - this._direction.y * this._bolideTailLength,
+        });
+        this._physicalPoints.push({
+            x: this._currentPoint.x - this._direction.x * this._bolideBackLength - directionNormal.x * this._bolideBackWidth, 
+            y: this._currentPoint.y - this._direction.y * this._bolideBackLength - directionNormal.y * this._bolideBackWidth,
+        });
+        this._physicalPoints.push({
+            x: this._currentPoint.x - this._direction.x * this._bolideMiddleLength - directionNormal.x * this._bolideMiddleWidth, 
+            y: this._currentPoint.y - this._direction.y * this._bolideMiddleLength - directionNormal.y * this._bolideMiddleWidth,
+        });
+        this._physicalPoints.push({
+            x: this._currentPoint.x + this._direction.x * this._bolideFrontLength - directionNormal.x * this._bolideFrontWidth, 
+            y: this._currentPoint.y + this._direction.y * this._bolideFrontLength - directionNormal.y * this._bolideFrontWidth,
+        });
 
         this._physicalPoints.map((physicalPoint) => {
-            physicalPoint = [Math.round(physicalPoint[0]), Math.round(physicalPoint[1])];
+            physicalPoint = {
+                x: Math.round(physicalPoint.x), 
+                y: Math.round(physicalPoint.y),
+            };
         });
     }
 
@@ -101,7 +114,7 @@ class Racer {
             name: this._name,
             color: this._color,
             score: this._score,
-            physicalPoints: this._physicalPoints,
+            points: this._physicalPoints,
         }
     }
 
@@ -116,11 +129,11 @@ class Racer {
     }
 
     distance(point1, point2) {
-        return Math.sqrt((point2[0] - point1[0]) * (point2[0] - point1[0]) + (point2[1] - point1[1]) * (point2[1] - point1[1]));
+        return Math.sqrt((point2.x - point1.x) * (point2.x - point1.x) + (point2.y - point1.y) * (point2.y - point1.y));
     }
 
     length(vector) {
-        return Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1]);
+        return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
     }
 }
 

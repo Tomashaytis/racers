@@ -1,10 +1,9 @@
 import './PlayerPanel.css';
 import { ClientApiContext } from '../contexts/ClientApiContext';
-import { useContext, useState} from 'react';
+import { useContext, useState } from 'react';
 
 function PlayerPanel(probs) {
     const clientApi = useContext(ClientApiContext); 
-    clientApi.callback = (data) => console.log(data);
 
     const [playerName, setPlayerName] = useState('');
     const handlePlayerNameChange = (e) => {

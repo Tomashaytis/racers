@@ -12,6 +12,7 @@ class WebSocketServer {
         this._colors = config.COLORS;
         this._width = config.WIDTH;
         this._height = config.HEIGHT;
+        this._bolidSize = config.BOLID_SIZE;
 
         this._wss = new WebSocket.Server({ port: this._port });
         this._connections = new Map();
@@ -128,7 +129,7 @@ class WebSocketServer {
                     avoidedPoints.push(racer.currentPoint);
                 });
 
-                this._racers.set(connectionId, new Racer(data.name, data.color, this._width, this._height, avoidedPoints));
+                this._racers.set(connectionId, new Racer(data.name, data.color, this._bolidSize, this._width, this._height, avoidedPoints));
                 console.log(`User ${connectionId} connected as player`);
                 break;
             case 'LEAVE':
