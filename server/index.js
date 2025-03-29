@@ -15,11 +15,6 @@ app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
 });
 
-const webSocketServer = new WebSocketServer(
-    config.PORT, 
-    config.MAX_WATCHERS_COUNT, 
-    config.MAX_PLAYERS_COUNT, 
-    config.SEND_INTERVAL,
-);
+const webSocketServer = new WebSocketServer(config);
 
 webSocketServer.listen();

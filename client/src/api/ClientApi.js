@@ -1,4 +1,6 @@
-export default class ClientApi {
+import config from "../config";
+
+class ClientApi {
     constructor(host, port, maxReconnectAttemps = 10, reconnectInterval = 5000) {
         this._url = `ws://${host}:${port}`;
         this._socket = null;
@@ -7,6 +9,7 @@ export default class ClientApi {
         this._maxReconnectAttempts = maxReconnectAttemps;
         this._reconnectInterval = reconnectInterval;
         this._reconnectTimer = null;
+        this._callback = (data) => {};
 
         this.initSocket();
     }
@@ -52,10 +55,36 @@ export default class ClientApi {
     handleError(error) {
         console.log(`Connection error: ${error}`);
     }
-  
-    send(action) {
+
+    get callback() {
+        return this._callback;
+    }
+
+    set callback(value) {
+        this._callback = value;
+    }
+
+    join(playerName, playerColor) {
+        console.log('Joining to game...');
+        this.send({
+            type: 'JOIN',
+            message: 'Join request',
+            name: playerName,
+            color: playerColor,
+        });
+    }
+
+    leave() {
+        console.log('Leaving to game...');
+        this.send({
+            type: 'LEAVE',
+            message: 'Leave request',
+        });
+    }
+
+    send(data) {
         if (this._socket.readyState === WebSocket.OPEN) {
-            this._socket.send(JSON.stringify(action));
+            this._socket.send(JSON.stringify(data));
         }
     }
   
@@ -66,9 +95,13 @@ export default class ClientApi {
                 console.log(data.message);
                 break;
             case 'DATA':
-                console.log(data);
+                this._callback(data.data);
+                break;
+            case 'Error':
+                console.log('Error:', data.message);
                 break;
             default:
+                console.log('Unknown message type');
                 console.log(data);
         }
     }
@@ -103,3 +136,12 @@ export default class ClientApi {
         this._reconnectAttempts = 0;
     }
 }
+
+const clientApi = new ClientApi(
+    config.HOST,
+    config.PORT,
+    config.MAX_RECONNECT_ATTEMPS,
+    config.RECONNECT_INTERVAL,
+);
+
+export default clientApi;
