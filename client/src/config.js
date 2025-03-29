@@ -4,6 +4,7 @@ const config = {
     MAX_RECONNECT_ATTEMPS: 12,
     RECONNECT_INTERVAL: 5000,
     MAX_NAME_LENGTH: 10,
+    SEND_INTERVAL: 5000,
     COLORS: [
         'red',
         'black',

@@ -6,10 +6,26 @@ import InfoPanel from './components/InfoPanel';
 import config from './config';
 import clientApi from './api/ClientApi';
 import { ClientApiContext } from './contexts/ClientApiContext';
+import { useTimer } from './hooks/useTimer';
+import { useState, useEffect } from 'react';
 import './App.css';
 
 
 function App() {
+    const [role, setRole] = useState(clientApi.role);
+
+    useEffect(() => {
+        const handler = () => setRole(clientApi.role);
+        clientApi.roleCallback = handler;
+        return () => {
+            clientApi.roleCallback = () => {};
+        };
+    }, []);
+
+    useTimer(config.SEND_INTERVAL, (pressedKeys) => {
+        console.log(pressedKeys);
+    }, role === 'player');
+
     return (
         <ClientApiContext.Provider value={clientApi}>
             <main>

@@ -5,11 +5,13 @@ class ClientApi {
         this._url = `ws://${host}:${port}`;
         this._socket = null;
         this._connectionId = null;
+        this._role = 'undefined';
         this._reconnectAttempts = 0;
         this._maxReconnectAttempts = maxReconnectAttemps;
         this._reconnectInterval = reconnectInterval;
         this._reconnectTimer = null;
-        this._callback = (data) => {};
+        this._dataCallback = (data) => {};
+        this._roleCallback = () => {};
 
         this.initSocket();
     }
@@ -56,13 +58,26 @@ class ClientApi {
         console.log(`Connection error: ${error}`);
     }
 
-    get callback() {
-        return this._callback;
+    get role() {
+        return this._role;
     }
 
-    set callback(value) {
-        this._callback = value;
+    get dataCallback() {
+        return this._dataCallback;
     }
+
+    set dataCallback(value) {
+        this._dataCallback = value;
+    }
+
+    get roleCallback() {
+        return this._roleCallback;
+    }
+
+    set roleCallback(value) {
+        this._roleCallback = value;
+    }
+
 
     join(playerName, playerColor) {
         console.log('Joining to game...');
@@ -92,13 +107,25 @@ class ClientApi {
         switch(data.type) {
             case 'INIT':
                 this._connectionId = data.playerId;
+                this._role = 'watcher';
+                this._roleCallback()
                 console.log(data.message);
                 break;
             case 'DATA':
-                this._callback(data.data);
+                this._dataCallback(data.data);
                 break;
-            case 'Error':
+            case 'ERROR':
                 console.log('Error:', data.message);
+                break;
+            case 'SUCCESS_JOIN':
+                this._role = 'player';
+                this._roleCallback()
+                console.log(data.message);
+                break;
+            case 'SUCCESS_LEAVE':
+                this._role = 'watcher';
+                this._roleCallback()
+                console.log(data.message);
                 break;
             default:
                 console.log('Unknown message type');

@@ -29,7 +29,7 @@ function Field(probs) {
             ctx.strokeStyle = "#333333";
             ctx.lineWidth = 2;
             ctx.stroke();
-            ctx.fillstyle = figure.color;
+            ctx.fillStyle = figure.color;
             ctx.fill();
 
             const topPoint = figure.points.reduce((top, current) => current.y < top.y ? current : top);
@@ -41,9 +41,9 @@ function Field(probs) {
     };
 
     useEffect(() => {
-        clientApi.callback = drawFigures;
+        clientApi.dataCallback = drawFigures;
         return () => {
-            clientApi.callback = (data) => {};
+            clientApi.dataCallback = (data) => {};
         };
     }, [clientApi]);
 

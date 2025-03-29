@@ -30,7 +30,6 @@ class WebSocketServer {
                 ws.send(JSON.stringify({
                     type: 'INIT',
                     message: 'Connection successful',
-                    status: 'WATCHER',
                     connectionId: connectionId,
                 }));
             } else {
@@ -130,6 +129,11 @@ class WebSocketServer {
                 });
 
                 this._racers.set(connectionId, new Racer(data.name, data.color, this._bolidSize, this._width, this._height, avoidedPoints));
+
+                ws.send(JSON.stringify({
+                    type: 'SUCCESS_JOIN',
+                    message: 'Join successful',
+                }));
                 console.log(`User ${connectionId} connected as player`);
                 break;
             case 'LEAVE':
@@ -137,8 +141,14 @@ class WebSocketServer {
                     this.sendErrorMessage(ws, 'Game leaving option available only for players');
                     return;
                 }
-                console.log(`User ${connectionId} leaving game`);
+
                 this._racers.delete(connectionId);
+
+                ws.send(JSON.stringify({
+                    type: 'SUCCESS_LEAVE',
+                    message: 'Join successful',
+                }));
+                console.log(`User ${connectionId} leaving game`);
                 break;
             default:
                 this.sendErrorMessage(ws, 'Unknown request type');
