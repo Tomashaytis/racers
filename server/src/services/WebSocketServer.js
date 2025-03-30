@@ -39,8 +39,10 @@ class WebSocketServer {
             const sendIntervalId = setInterval(() => {
                 const data = []
                 this._racers.forEach((racer, id) => {
+                    racer.move();
                     data.push(racer.toDto());
                 });
+
                 ws.send(JSON.stringify({
                     type: 'DATA',
                     message: 'Accept actual data',
@@ -149,6 +151,35 @@ class WebSocketServer {
                     message: 'Join successful',
                 }));
                 console.log(`User ${connectionId} leaving game`);
+                break;
+            case 'ACTION':
+                if (!this._racers.has(connectionId)) {
+                    this.sendErrorMessage(ws, 'Action available only for players');
+                    return;
+                }
+                if (!data.hasOwnProperty('action')) {
+                    this.sendErrorMessage(ws, 'Action not set');
+                    return;
+                }
+
+                if (!data.action.hasOwnProperty('forward') || typeof data.action.forward !== 'boolean') {
+                    this.sendErrorMessage(ws, 'Incorrect action format');
+                    return;
+                }
+                if (!data.action.hasOwnProperty('backward') || typeof data.action.backward !== 'boolean') {
+                    this.sendErrorMessage(ws, 'Incorrect action format');
+                    return;
+                }
+                if (!data.action.hasOwnProperty('left') || typeof data.action.left !== 'boolean') {
+                    this.sendErrorMessage(ws, 'Incorrect action format');
+                    return;
+                }
+                if (!data.action.hasOwnProperty('right') || typeof data.action.right !== 'boolean') {
+                    this.sendErrorMessage(ws, 'Incorrect action format');
+                    return;
+                }
+
+                this._racers.get(connectionId).setEngine(data.action);
                 break;
             default:
                 this.sendErrorMessage(ws, 'Unknown request type');

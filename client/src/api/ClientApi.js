@@ -78,7 +78,6 @@ class ClientApi {
         this._roleCallback = value;
     }
 
-
     join(playerName, playerColor) {
         console.log('Joining to game...');
         this.send({
@@ -94,6 +93,14 @@ class ClientApi {
         this.send({
             type: 'LEAVE',
             message: 'Leave request',
+        });
+    }
+
+    action(action) {
+        this.send({
+            type: 'ACTION',
+            message: 'Sending current action',
+            action: action,
         });
     }
 

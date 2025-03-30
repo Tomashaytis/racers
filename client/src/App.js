@@ -23,7 +23,13 @@ function App() {
     }, []);
 
     useTimer(config.SEND_INTERVAL, (pressedKeys) => {
-        console.log(pressedKeys);
+        const action = {
+            forward: pressedKeys.includes('w'),
+            backward: pressedKeys.includes('s'),
+            left: pressedKeys.includes('a'),
+            right: pressedKeys.includes('d'),
+        }
+        clientApi.action(action);
     }, role === 'player');
 
     return (
