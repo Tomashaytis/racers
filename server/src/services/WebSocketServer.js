@@ -13,10 +13,15 @@ class WebSocketServer {
         this._width = config.WIDTH;
         this._height = config.HEIGHT;
         this._bolidSize = config.BOLID_SIZE;
+        this._engineOnTtl = config.ENGINE_ON_TTL;
+        this._velocityLimit = config.VELOCITY_LIMIT;
 
         this._wss = new WebSocket.Server({ port: this._port });
         this._connections = new Map();
         this._racers = new Map();
+        this._racersNames = [];
+        this._racersColors = [];
+        this._star = null;
     }
 
     listen() {
@@ -39,14 +44,21 @@ class WebSocketServer {
             const sendIntervalId = setInterval(() => {
                 const data = []
                 this._racers.forEach((racer, id) => {
-                    racer.move();
+                    if (racer.move(this._star)) {
+                        this._star = racer.generateStar();
+                    }
                     data.push(racer.toDto());
                 });
 
                 ws.send(JSON.stringify({
                     type: 'DATA',
                     message: 'Accept actual data',
-                    data: data,
+                    data: {
+                        figures: data,
+                        game: {
+                            star: this._star,
+                        }
+                    }
                 }));
             }, this._sendInterval);
 
@@ -67,17 +79,37 @@ class WebSocketServer {
             });
           
             ws.on('close', () => {
-                this._connections.delete(connectionId)
-                this._racers.delete(connectionId);
+                if (this._racers.has(connectionId)) {
+                    let index = this._racersNames.indexOf(this._racers.get(connectionId).name);
+                    if (index !== -1) {
+                        this._racersNames.splice(index, 1);
+                    }
+                    index = this._racersColors.indexOf(this._racers.get(connectionId).color);
+                    if (index !== -1) {
+                        this._racersColors.splice(index, 1);
+                    }
+                    this._racers.delete(connectionId);
+                }
                 console.log(`User ${connectionId} disconected`);
+                this._connections.delete(connectionId)
                 clearInterval(sendIntervalId);
             });
 
             ws.on('error', (error) => {
                 console.log(`Error while working with user ${connectionId}: ${error}`);
                 ws.close(1011, `Internal server error: ${error}`);
+                if (this._racers.has(connectionId)) {
+                    let index = this._racersNames.indexOf(this._racers.get(connectionId).name);
+                    if (index !== -1) {
+                        this._racersNames.splice(index, 1);
+                    }
+                    index = this._racersColors.indexOf(this._racers.get(connectionId).color);
+                    if (index !== -1) {
+                        this._racersColors.splice(index, 1);
+                    }
+                    this._racers.delete(connectionId);
+                }
                 this._connections.delete(connectionId);
-                this._racers.delete(connectionId);
                 clearInterval(sendIntervalId);
                 ws.terminate();
             });
@@ -124,13 +156,27 @@ class WebSocketServer {
                     this.sendErrorMessage(ws, 'Invalid player name');
                     return;
                 }
+                if (this._racersNames.includes(data.name)) {
+                    this.sendErrorMessage(ws, 'Player name already exists');
+                    return;
+                }
+                if (this._racersColors.includes(data.color)) {
+                    this.sendErrorMessage(ws, 'Player color already exists');
+                    return;
+                }
 
                 const avoidedPoints = [];
                 this._racers.forEach((racer, id) => {
                     avoidedPoints.push(racer.currentPoint);
                 });
 
-                this._racers.set(connectionId, new Racer(data.name, data.color, this._bolidSize, this._width, this._height, avoidedPoints));
+                this._racers.set(connectionId, new Racer(data.name, data.color, this._bolidSize, this._velocityLimit, this._engineOnTtl, this._width, this._height, avoidedPoints));
+                this._racersNames.push(data.name);
+                this._racersColors.push(data.color);
+                
+                if (this._racers.size === 1) {
+                    this._star = this._racers.get(connectionId).generateStar();
+                }
 
                 ws.send(JSON.stringify({
                     type: 'SUCCESS_JOIN',
@@ -144,11 +190,22 @@ class WebSocketServer {
                     return;
                 }
 
+                let index = this._racersNames.indexOf(this._racers.get(connectionId).name);
+                if (index !== -1) {
+                    this._racersNames.splice(index, 1);
+                }
+                index = this._racersColors.indexOf(this._racers.get(connectionId).color);
+                if (index !== -1) {
+                    this._racersColors.splice(index, 1);
+                }
                 this._racers.delete(connectionId);
+                if (this._racers.size === 0) {
+                    this._star = null;
+                }
 
                 ws.send(JSON.stringify({
                     type: 'SUCCESS_LEAVE',
-                    message: 'Join successful',
+                    message: 'Leave successful',
                 }));
                 console.log(`User ${connectionId} leaving game`);
                 break;

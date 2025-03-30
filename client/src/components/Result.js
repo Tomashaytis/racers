@@ -1,11 +1,11 @@
 import './Result.css';
 
-function Result({ playerColor, playerName, playerScore }) {
+function Result(props) {
     return (
         <div className="result">
-            <div className='player-color' style={{backgroundColor: playerColor}}></div>
-            <div className='player-name'>{playerName}</div>
-            <div className='player-score'>{playerScore} points</div>
+            <div className='player-color' style={{backgroundColor: props.playerColor}}></div>
+            <div className='player-name'>{props.playerName}</div>
+            <div className='player-score'>{props.playerScore}</div>
         </div>
     )
 }

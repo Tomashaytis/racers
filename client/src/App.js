@@ -22,6 +22,26 @@ function App() {
         };
     }, []);
 
+    const [players, setPlayers] = useState([]);
+
+    useEffect(() => {
+        const handler = (data) => {
+            const playerData = [];
+            for (let figure of data.figures) {
+                playerData.push({
+                    name: figure.name,
+                    color: figure.color,
+                    score: figure.score,
+                });
+            }
+            setPlayers(playerData);
+        } 
+        clientApi.playersCallback = handler;
+        return () => {
+            clientApi.playersCallback = (data) => {};
+        };
+    }, [players]);
+
     useTimer(config.SEND_INTERVAL, (pressedKeys) => {
         const action = {
             forward: pressedKeys.includes('w'),
@@ -42,18 +62,18 @@ function App() {
                     </div>
                     <div className='game-results'>
                         <h2 className='result-header'>Results</h2>
-                        <Results />
+                        <Results players={players} />
                     </div>
                     <div className='panels'>
                         <div className='game-player-panel'>
-                            <PlayerPanel freeColors={config.COLORS} maxNameLength={config.MAX_NAME_LENGTH} />
+                            <PlayerPanel colors={config.COLORS} maxNameLength={config.MAX_NAME_LENGTH} players={players} />
                        </div>
                         <div className='game-score-panel'>
-                           <ScorePanel playerScore='?' playerPlace='?' />
+                           <ScorePanel players={players} />
                         </div>
                     </div>
                     <div className='game-info-panel'>
-                        <InfoPanel playerCount='0' aiPlayerCount='0' />
+                        <InfoPanel playerCount={players.length} aiPlayerCount='0' />
                     </div>
                 </div>
             </main>

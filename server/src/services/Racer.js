@@ -1,10 +1,11 @@
 class Racer {
-    constructor(name, color, bolidSize, width, height, avoidedPoints = [], startPoint = null, startDirection = null) {
+    constructor(name, color, bolidSize, velocityLimit, engineOnTtl, width, height, avoidedPoints = [], startPoint = null, startDirection = null) {
         // General params
         this._name = name;
         this._color = color;
         this._bolidSize = bolidSize;
         this._bolidRadius = this._bolidSize * 10;
+        this._pickRadius = 10;
         this._score = 0;
         this._width = width;
         this._height = height;
@@ -54,7 +55,7 @@ class Racer {
         this._bolideBackWidth = this._bolidSize * 3;
 
         // General move params
-        this._engineOnTtlMax = 15;
+        this._engineOnTtl = engineOnTtl;
         this._forwardOnTtl = 0;
         this._backwardOnTtl = 0;
         this._leftOnTtl = 0;
@@ -66,7 +67,7 @@ class Racer {
             x: 0,
             y: 0,
         };
-        this._velocityLimit = 8;
+        this._velocityLimit = velocityLimit;
         this._acceleration = {
             x: 0,
             y: 0,
@@ -88,11 +89,19 @@ class Racer {
 
         // Collision params
         this._collisionRadius = 3;
-        this.collisionFading = 0.75;
+        this._collisionFading = 0.75;
     }
 
     get currentPoint() {
         return this._currentPoint;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    get color() {
+        return this._color;
     }
 
     generatePoints() {
@@ -150,25 +159,25 @@ class Racer {
 
     setEngine(actions) {
         if (actions.forward) {
-            this._forwardOnTtl = this._engineOnTtlMax;
+            this._forwardOnTtl = this._engineOnTtl;
         } else {
             this._forwardOnTtl = 0;
         }
 
         if (actions.backward) {
-            this._backwardOnTtl = this._engineOnTtlMax;
+            this._backwardOnTtl = this._engineOnTtl;
         } else {
             this._backwardOnTtl = 0;
         }
 
         if (actions.left) {
-            this._leftOnTtl = this._engineOnTtlMax;
+            this._leftOnTtl = this._engineOnTtl;
         } else {
             this._leftOnTtl = 0;
         }
 
         if (actions.right) {
-            this._rightOnTtl = this._engineOnTtlMax;
+            this._rightOnTtl = this._engineOnTtl;
         } else {
             this._rightOnTtl = 0;
         }
@@ -215,7 +224,7 @@ class Racer {
         }
     }
 
-    move() {
+    move(star) {
         this.useEngine();
 
         this._acceleration = this.reproject(this._accelerationRel, this._direction);
@@ -246,8 +255,8 @@ class Racer {
             for(let point of this._physicalPoints) {
                 if (this.distance(point, { x: point.x, y: 0 }) < this._collisionRadius) {
                     if (first) {
-                        this._velocity.x = this._velocity.x * this.collisionFading;
-                        this._velocity.y = Math.abs(this._velocity.y) * this.collisionFading;
+                        this._velocity.x = this._velocity.x * this._collisionFading;
+                        this._velocity.y = Math.abs(this._velocity.y) * this._collisionFading;
                         first = false;
                     }
                     corrections.push(-point.y);
@@ -261,8 +270,8 @@ class Racer {
             for(let point of this._physicalPoints) {
                 if (this.distance(point, { x: point.x, y: this._height - 1 }) < this._collisionRadius) {
                     if (first) {
-                        this._velocity.x = this._velocity.x * this.collisionFading;
-                        this._velocity.y = -Math.abs(this._velocity.y) * this.collisionFading;
+                        this._velocity.x = this._velocity.x * this._collisionFading;
+                        this._velocity.y = -Math.abs(this._velocity.y) * this._collisionFading;
                         first = false;
                     }
                     corrections.push(this._height - 1 - point.y);
@@ -276,8 +285,8 @@ class Racer {
             for(let point of this._physicalPoints) {
                 if (this.distance(point, { x: 0, y: point.y }) < this._collisionRadius) {
                     if (first) {
-                        this._velocity.x = Math.abs(this._velocity.x) * this.collisionFading;
-                        this._velocity.y =  this._velocity.y * this.collisionFading;
+                        this._velocity.x = Math.abs(this._velocity.x) * this._collisionFading;
+                        this._velocity.y =  this._velocity.y * this._collisionFading;
                         first = false;
                     }
                     corrections.push(-point.x);
@@ -291,8 +300,8 @@ class Racer {
             for(let point of this._physicalPoints) {
                 if (this.distance(point, { x: this._width - 1, y: point.y }) < this._collisionRadius) {
                     if (first) {
-                        this._velocity.x = -Math.abs(this._velocity.x) * this.collisionFading;
-                        this._velocity.y =  this._velocity.y * this.collisionFading;
+                        this._velocity.x = -Math.abs(this._velocity.x) * this._collisionFading;
+                        this._velocity.y =  this._velocity.y * this._collisionFading;
                         first = false;
                     }
                     corrections.push(this._width - 1 - point.x);
@@ -302,6 +311,17 @@ class Racer {
         }
 
         this.generatePoints();
+
+        if (this.distance(star, this._currentPoint) > this._bolidRadius) {
+            return false;
+        }
+        for(let point of this._physicalPoints) {
+            if (this.distance(star, point) < this._pickRadius) {
+                this._score += 1;
+                return true;
+            }
+        }
+        return false;
     }
 
     toDto() {
@@ -382,6 +402,13 @@ class Racer {
 
     getRandomDouble(min, max) {
         return Math.random() * (max - min) + min;
+    }
+
+    generateStar() {
+        return {
+            x: this.getRandomInt(this._bolidRadius, this._width - this._bolidRadius), 
+            y: this.getRandomInt(this._bolidRadius, this._height - this._bolidRadius),
+        };
     }
 }
 

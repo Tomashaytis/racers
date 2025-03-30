@@ -6,6 +6,8 @@ const config = {
     SEND_INTERVAL: 50,
     MAX_NAME_LENGTH: 10,
     BOLID_SIZE: 2,
+    ENGINE_ON_TTL: 15,
+    VELOCITY_LIMIT: 8,
     WIDTH: 800,
     HEIGHT: 450,
     COLORS: [

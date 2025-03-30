@@ -2,7 +2,7 @@ import './PlayerPanel.css';
 import { ClientApiContext } from '../contexts/ClientApiContext';
 import { useContext, useState } from 'react';
 
-function PlayerPanel(probs) {
+function PlayerPanel(props) {
     const clientApi = useContext(ClientApiContext); 
 
     const [playerName, setPlayerName] = useState('');
@@ -10,7 +10,17 @@ function PlayerPanel(probs) {
         setPlayerName(e.target.value);
     };
 
-    const [playerColor, setSelectedColor] = useState(probs.freeColors[0]);
+    const existingNames = [];
+    const availableColors = props.colors;
+    for (let player of props.players) {
+        existingNames.push(player.name);
+        const index = availableColors.indexOf(player.color);
+        if (index !== -1 && player.color !== clientApi.playerColor) {
+            availableColors.splice(index, 1);
+        }
+    }
+
+    const [playerColor, setSelectedColor] = useState(availableColors[0]);
     const handleColorChange = (e) => {
         setSelectedColor(e.target.value);
     };
@@ -21,10 +31,12 @@ function PlayerPanel(probs) {
     }
 
     const handleClick = () => {
-        if (playerName.length > probs.maxNameLength) {
+        if (playerName.length > props.maxNameLength) {
             alert('Your name too long!');
         } else if (playerName.length === 0) {
             alert('You forgot to set your name!');
+        } else if (isJoin && existingNames.includes(playerName)) {
+            alert('This name already exists!');
         } else {
             if (isJoin) {
                 changeButtonState();
@@ -41,7 +53,7 @@ function PlayerPanel(probs) {
         <div className="player-panel">
             <input type='text' className='input-name' placeholder='Your name' disabled={!isJoin} onChange={handlePlayerNameChange}></input>
             <select className='select-color' disabled={!isJoin} onChange={handleColorChange}> {
-                    probs.freeColors.map((color, index) => (
+                    availableColors.map((color, index) => (
                         <option key={index} value={color}>{color}</option>
                     )
                 )}

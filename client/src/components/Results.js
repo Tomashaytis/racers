@@ -1,19 +1,13 @@
 import './Results.css';
 import Result from './Result';
 
-function Results() {
+function Results(props) {
     return (
-        <div className="results">
-            <Result playerColor="red" playerName="bob" playerScore="30" />
-            <Result playerColor="blue" playerName="bill" playerScore="20" />
-            <Result playerColor="red" playerName="bob" playerScore="30" />
-            <Result playerColor="blue" playerName="bill" playerScore="20" />
-            <Result playerColor="red" playerName="bob" playerScore="30" />
-            <Result playerColor="blue" playerName="bill" playerScore="20" />
-            <Result playerColor="red" playerName="bob" playerScore="30" />
-            <Result playerColor="blue" playerName="bill" playerScore="20" />
-            <Result playerColor="red" playerName="bob" playerScore="30" />
-            <Result playerColor="blue" playerName="bill" playerScore="100" />
+        <div className="results"> {
+                props.players.map((player) => (
+                    <Result key={player.name} playerColor={player.color} playerName={player.name} playerScore={player.score} />
+                )
+            )}
         </div>
     )
 }

@@ -20,11 +20,11 @@
 .player-name {
     margin: 3px;
     text-align: start;
-    width: 30%;
+    width: 50px;
 }
 
 .player-score {
     margin: 3px;
     text-align: end;
-    width: 40%;
+    width: 40px;
 }

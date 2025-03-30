@@ -11,7 +11,10 @@ class ClientApi {
         this._reconnectInterval = reconnectInterval;
         this._reconnectTimer = null;
         this._dataCallback = (data) => {};
+        this._playersCallback = (data) => {};
         this._roleCallback = () => {};
+        this._playerName = null;
+        this._playerColor = null;
 
         this.initSocket();
     }
@@ -62,6 +65,14 @@ class ClientApi {
         return this._role;
     }
 
+    get playersCallback() {
+        return this._playersCallback;
+    }
+
+    set playersCallback(value) {
+        this._playersCallback = value;
+    }
+
     get dataCallback() {
         return this._dataCallback;
     }
@@ -78,8 +89,18 @@ class ClientApi {
         this._roleCallback = value;
     }
 
+    get playerName() {
+        return this._playerName;
+    }
+
+    get playerColor() {
+        return this._playerColor;
+    }
+
     join(playerName, playerColor) {
         console.log('Joining to game...');
+        this._playerName = playerName;
+        this._playerColor = playerColor;
         this.send({
             type: 'JOIN',
             message: 'Join request',
@@ -90,6 +111,8 @@ class ClientApi {
 
     leave() {
         console.log('Leaving to game...');
+        this._playerName = null;
+        this._playerColor = null;
         this.send({
             type: 'LEAVE',
             message: 'Leave request',
@@ -120,6 +143,7 @@ class ClientApi {
                 break;
             case 'DATA':
                 this._dataCallback(data.data);
+                this._playersCallback(data.data);
                 break;
             case 'ERROR':
                 console.log('Error:', data.message);
