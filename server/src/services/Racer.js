@@ -1,5 +1,5 @@
 class Racer {
-    constructor(name, color, bolidSize, velocityLimit, engineOnTtl, width, height, avoidedPoints = [], startPoint = null, startDirection = null) {
+    constructor(name, color, bolidSize, velocityLimit, engineOnTtl, isBot, width, height, avoidedPoints = [], startPoint = null, startDirection = null) {
         // General params
         this._name = name;
         this._color = color;
@@ -7,18 +7,19 @@ class Racer {
         this._bolidRadius = this._bolidSize * 10;
         this._pickRadius = 10;
         this._score = 0;
+        this._isBot = isBot;
         this._width = width;
         this._height = height;
         this._physicalPoints = [];
         if (startPoint == null) {
             while (true) {
-                this._currentPoint = {
-                    x: this.getRandomInt(this._bolidRadius, width - this._bolidRadius), 
-                    y: this.getRandomInt(this._bolidRadius, height - this._bolidRadius),
+                this._position = {
+                    x: Racer.getRandomInt(this._bolidRadius, width - this._bolidRadius), 
+                    y: Racer.getRandomInt(this._bolidRadius, height - this._bolidRadius),
                 };
                 let success = true
                 for (let point of avoidedPoints) {
-                    if (this.distance(point, this._currentPoint) < this._bolidRadius) {
+                    if (Racer.distance(point, this._position) < this._bolidRadius) {
                         success = false;
                         break;
                     }
@@ -28,19 +29,19 @@ class Racer {
                 }   
             }
         } else {
-            this._currentPoint = startPoint;
+            this._position = startPoint;
         }
         if (startDirection == null) {
             this._direction = {
                 x: 1, 
                 y: 0,
             };
-            const turnAngle = this.getRandomDouble(-Math.PI, Math.PI);
-            this._direction = this.rotate(this._direction, turnAngle);
+            const turnAngle = Racer.getRandomDouble(-Math.PI, Math.PI);
+            this._direction = Racer.rotate(this._direction, turnAngle);
         } else {
             this._direction = startPoint;
         }
-        this._normal = this.normal(this._direction);
+        this._normal = Racer.normal(this._direction);
         this.generatePoints();
 
         // Shape params
@@ -92,10 +93,21 @@ class Racer {
         this._collisionFading = 0.75;
         this._inertia = 1 / 12 * (4 * this._bolideHeadLength * this._bolideHeadLength + 4 * this._bolideMiddleWidth * this._bolideMiddleWidth);
         this._correctionFactor = 0.8;
+
+        // Auto params
+        this._brakingRadius = 50;
+        this._brakingValue = 3;
+        this._moveMode = 'forward';
+        this._backwardMoveCounterMax = 10;
+        this._backwardMoveCounter = 0;
+        this._stopCounter = 0;
+        this._stopCounterMax = 3;
+        this._prevPosition = this._position;
+        this._noMoveDistance = 10;
     }
 
-    get currentPoint() {
-        return this._currentPoint;
+    get position() {
+        return this._position;
     }
 
     get name() {
@@ -106,40 +118,44 @@ class Racer {
         return this._color;
     }
 
+    get isBot() {
+        return this._isBot;
+    }
+
     generatePoints() {
         this._physicalPoints = [];
 
         this._physicalPoints.push({
-            x: this._currentPoint.x + this._direction.x * this._bolideHeadLength, 
-            y: this._currentPoint.y + this._direction.y * this._bolideHeadLength,
+            x: this._position.x + this._direction.x * this._bolideHeadLength, 
+            y: this._position.y + this._direction.y * this._bolideHeadLength,
         });
         this._physicalPoints.push({
-            x: this._currentPoint.x + this._direction.x * this._bolideFrontLength + this._normal.x * this._bolideFrontWidth, 
-            y: this._currentPoint.y + this._direction.y * this._bolideFrontLength + this._normal.y * this._bolideFrontWidth,
+            x: this._position.x + this._direction.x * this._bolideFrontLength + this._normal.x * this._bolideFrontWidth, 
+            y: this._position.y + this._direction.y * this._bolideFrontLength + this._normal.y * this._bolideFrontWidth,
         });
         this._physicalPoints.push({
-            x: this._currentPoint.x - this._direction.x * this._bolideMiddleLength + this._normal.x * this._bolideMiddleWidth, 
-            y: this._currentPoint.y - this._direction.y * this._bolideMiddleLength + this._normal.y * this._bolideMiddleWidth,
+            x: this._position.x - this._direction.x * this._bolideMiddleLength + this._normal.x * this._bolideMiddleWidth, 
+            y: this._position.y - this._direction.y * this._bolideMiddleLength + this._normal.y * this._bolideMiddleWidth,
         });
         this._physicalPoints.push({
-            x: this._currentPoint.x - this._direction.x * this._bolideBackLength + this._normal.x * this._bolideBackWidth, 
-            y: this._currentPoint.y - this._direction.y * this._bolideBackLength + this._normal.y * this._bolideBackWidth,
+            x: this._position.x - this._direction.x * this._bolideBackLength + this._normal.x * this._bolideBackWidth, 
+            y: this._position.y - this._direction.y * this._bolideBackLength + this._normal.y * this._bolideBackWidth,
         });
         this._physicalPoints.push({
-            x: this._currentPoint.x - this._direction.x * this._bolideTailLength, 
-            y: this._currentPoint.y - this._direction.y * this._bolideTailLength,
+            x: this._position.x - this._direction.x * this._bolideTailLength, 
+            y: this._position.y - this._direction.y * this._bolideTailLength,
         });
         this._physicalPoints.push({
-            x: this._currentPoint.x - this._direction.x * this._bolideBackLength - this._normal.x * this._bolideBackWidth, 
-            y: this._currentPoint.y - this._direction.y * this._bolideBackLength - this._normal.y * this._bolideBackWidth,
+            x: this._position.x - this._direction.x * this._bolideBackLength - this._normal.x * this._bolideBackWidth, 
+            y: this._position.y - this._direction.y * this._bolideBackLength - this._normal.y * this._bolideBackWidth,
         });
         this._physicalPoints.push({
-            x: this._currentPoint.x - this._direction.x * this._bolideMiddleLength - this._normal.x * this._bolideMiddleWidth, 
-            y: this._currentPoint.y - this._direction.y * this._bolideMiddleLength - this._normal.y * this._bolideMiddleWidth,
+            x: this._position.x - this._direction.x * this._bolideMiddleLength - this._normal.x * this._bolideMiddleWidth, 
+            y: this._position.y - this._direction.y * this._bolideMiddleLength - this._normal.y * this._bolideMiddleWidth,
         });
         this._physicalPoints.push({
-            x: this._currentPoint.x + this._direction.x * this._bolideFrontLength - this._normal.x * this._bolideFrontWidth, 
-            y: this._currentPoint.y + this._direction.y * this._bolideFrontLength - this._normal.y * this._bolideFrontWidth,
+            x: this._position.x + this._direction.x * this._bolideFrontLength - this._normal.x * this._bolideFrontWidth, 
+            y: this._position.y + this._direction.y * this._bolideFrontLength - this._normal.y * this._bolideFrontWidth,
         });
 
         this._physicalPoints.map((physicalPoint) => {
@@ -176,13 +192,59 @@ class Racer {
         }
     }
 
+    AutoEngine(star) {
+        const target = Racer.normalize(Racer.vector(this._position, star));
+        const angle = Racer.angleSign(this._direction, target) * Racer.angle(this._direction, target);
+        if (angle < 0.1) {
+            this._rightOnTtl = this._engineOnTtl;
+            this._leftOnTtl = 0;
+        } else if (angle > 0.1) {
+            this._rightOnTtl = 0;
+            this._leftOnTtl = this._engineOnTtl;
+        }
+
+        if (Racer.distance(this._prevPosition, this._position) < this._noMoveDistance) {
+            this._stopCounter += 1;
+        } else if (this._stopCounter > 0 && Racer.getRandomInt(0, 4) === 0){
+            this._stopCounter -= 1;
+        }
+
+        if (this._moveMode === 'backward' && this._backwardMoveCounter < this._backwardMoveCounterMax) {
+            this._backwardMoveCounter += 1;
+        } else if (this._moveMode === 'backward') {
+            this._moveMode = 'forward';
+            this._backwardMoveCounter = 0;
+        }
+
+        if (this._stopCounter >= this._stopCounterMax) {
+            this._moveMode = 'backward';
+            this._backwardMoveCounter = 0;
+            this._stopCounter = 0;
+        }
+
+        if (this._moveMode === 'forward') {
+            if (Racer.distance(this._position, star) > this._brakingRadius) {
+                this._forwardOnTtl = this._engineOnTtl;
+            } else if (Racer.getRandomInt(0, this._brakingValue) === 1) {
+                this._forwardOnTtl = this._engineOnTtl;
+            }
+        } else {
+            if (Racer.distance(this._position, star) > this._brakingRadius) {
+                this._backwardOnTtl = this._engineOnTtl;
+            } else if (Racer.getRandomInt(0, this._brakingValue) === 1) {
+                this._backwardOnTtl = this._engineOnTtl;
+            }
+        }
+        this._prevPosition = this._position;
+    }
+
     useEngine() {
         this._accelerationRel = {
             lon: 0,
             lat: 0,
         }
 
-        var sign = this.scalar(this._direction, this.project(this._velocity, this._direction));
+        var sign = Racer.scalar(this._direction, Racer.project(this._velocity, this._direction));
         if (sign > 0.05) {
             this._accelerationRel.lon += this._accelerationRelOff.lon;
         } else if (sign < -0.05) {
@@ -191,7 +253,7 @@ class Racer {
             this._accelerationRel.lat = 0;
         }
 
-        var sign = this.scalar(this._normal, this.project(this._velocity, this._normal));
+        var sign = Racer.scalar(this._normal, Racer.project(this._velocity, this._normal));
         if (sign > 0.05) {
             this._accelerationRel.lat += this._accelerationRelOff.lat;
         } else if (sign < -0.05) {
@@ -234,38 +296,38 @@ class Racer {
     move(star) {
         this.useEngine();
 
-        this._acceleration = this.reproject(this._accelerationRel, this._direction);
-        this._currentPoint = {
-            x: this._currentPoint.x + this._velocity.x * this._timeStep + this._acceleration.x * this._timeStep * this._timeStep / 2,
-            y: this._currentPoint.y + this._velocity.y * this._timeStep + this._acceleration.y * this._timeStep * this._timeStep / 2,
+        this._acceleration = Racer.reproject(this._accelerationRel, this._direction);
+        this._position = {
+            x: this._position.x + this._velocity.x * this._timeStep + this._acceleration.x * this._timeStep * this._timeStep / 2,
+            y: this._position.y + this._velocity.y * this._timeStep + this._acceleration.y * this._timeStep * this._timeStep / 2,
         };
         this._velocity = {
             x: this._velocity.x + this._acceleration.x * this._timeStep,
             y: this._velocity.y + this._acceleration.y * this._timeStep,
         };
-        this._velocity = this.length(this._velocity) < 0.25 ? { x: 0, y: 0 } : this._velocity
+        this._velocity = Racer.length(this._velocity) < 0.25 ? { x: 0, y: 0 } : this._velocity
 
-        if (this.length(this._velocity) > this._velocityLimit) {
-            const tmp = this.normilize(this._velocity);
+        if (Racer.length(this._velocity) > this._velocityLimit) {
+            const tmp = Racer.normalize(this._velocity);
             this._velocity = {
                 x: tmp.x * this._velocityLimit,
                 y: tmp.y * this._velocityLimit,
             };
         }
 
-        this._angularVelocity = this._angularVelocity * this.length(this._velocity) / 10;
+        this._angularVelocity = this._angularVelocity * Racer.length(this._velocity) / 10;
         if (this._angularVelocity > this._angularVelocityLimit) {
             this._angularVelocity = this._angularVelocityLimit;
         }
         const angle = this._angularVelocity * this._timeStep;
-        this._direction = this.rotate(this._direction, angle);
-        this._normal = this.normal(this._direction);
+        this._direction = Racer.rotate(this._direction, angle);
+        this._normal = Racer.normal(this._direction);
 
-        if (this.distance(this._currentPoint, { x: this._currentPoint.x, y: 0 }) < this._bolidRadius) {
+        if (Racer.distance(this._position, { x: this._position.x, y: 0 }) < this._bolidRadius) {
             let first = true;
             const corrections = [0];
             for(let point of this._physicalPoints) {
-                if (this.distance(point, { x: point.x, y: 0 }) < this._wallCollisionRadius) {
+                if (Racer.distance(point, { x: point.x, y: 0 }) < this._wallCollisionRadius) {
                     if (first) {
                         this._velocity.x = this._velocity.x * this._collisionFading;
                         this._velocity.y = Math.abs(this._velocity.y) * this._collisionFading;
@@ -274,13 +336,13 @@ class Racer {
                     corrections.push(-point.y);
                 }
             }
-            this._currentPoint.y += Math.max(...corrections);
+            this._position.y += Math.max(...corrections);
         }
-        if (this.distance(this._currentPoint, { x: this._currentPoint.x, y: this._height - 1 }) < this._bolidRadius) {
+        if (Racer.distance(this._position, { x: this._position.x, y: this._height - 1 }) < this._bolidRadius) {
             let first = true;
             const corrections = [0];
             for(let point of this._physicalPoints) {
-                if (this.distance(point, { x: point.x, y: this._height - 1 }) < this._wallCollisionRadius) {
+                if (Racer.distance(point, { x: point.x, y: this._height - 1 }) < this._wallCollisionRadius) {
                     if (first) {
                         this._velocity.x = this._velocity.x * this._collisionFading;
                         this._velocity.y = -Math.abs(this._velocity.y) * this._collisionFading;
@@ -289,13 +351,13 @@ class Racer {
                     corrections.push(this._height - 1 - point.y);
                 }
             }
-            this._currentPoint.y -= Math.max(...corrections);
+            this._position.y -= Math.max(...corrections);
         }
-        if (this.distance(this._currentPoint, { x: 0, y: this._currentPoint.y }) < this._bolidRadius) {
+        if (Racer.distance(this._position, { x: 0, y: this._position.y }) < this._bolidRadius) {
             let first = true;
             const corrections = [0];
             for(let point of this._physicalPoints) {
-                if (this.distance(point, { x: 0, y: point.y }) < this._wallCollisionRadius) {
+                if (Racer.distance(point, { x: 0, y: point.y }) < this._wallCollisionRadius) {
                     if (first) {
                         this._velocity.x = Math.abs(this._velocity.x) * this._collisionFading;
                         this._velocity.y =  this._velocity.y * this._collisionFading;
@@ -304,13 +366,13 @@ class Racer {
                     corrections.push(-point.x);
                 }
             }
-            this._currentPoint.x += Math.max(...corrections);
+            this._position.x += Math.max(...corrections);
         }
-        if (this.distance(this._currentPoint, { x: this._width, y: this._currentPoint.y }) < this._bolidRadius) {
+        if (Racer.distance(this._position, { x: this._width, y: this._position.y }) < this._bolidRadius) {
             let first = true;
             const corrections = [0];
             for(let point of this._physicalPoints) {
-                if (this.distance(point, { x: this._width - 1, y: point.y }) < this._wallCollisionRadius) {
+                if (Racer.distance(point, { x: this._width - 1, y: point.y }) < this._wallCollisionRadius) {
                     if (first) {
                         this._velocity.x = -Math.abs(this._velocity.x) * this._collisionFading;
                         this._velocity.y =  this._velocity.y * this._collisionFading;
@@ -319,16 +381,16 @@ class Racer {
                     corrections.push(this._width - 1 - point.x);
                 }
             }
-            this._currentPoint.x -= Math.max(...corrections);
+            this._position.x -= Math.max(...corrections);
         }
 
         this.generatePoints();
 
-        if (this.distance(star, this._currentPoint) > this._bolidRadius) {
+        if (Racer.distance(star, this._position) > this._bolidRadius) {
             return false;
         }
         for(let point of this._physicalPoints) {
-            if (this.distance(star, point) < this._pickRadius) {
+            if (Racer.distance(star, point) < this._pickRadius) {
                 this._score += 1;
                 return true;
             }
@@ -340,33 +402,33 @@ class Racer {
         const processed = [];
         racers.forEach((racer1, id1) => {
             racers.forEach((racer2, id2) => {
-                if (id1 === id2 || processed.includes(id2) || racer1.distance(racer1._currentPoint, racer2._currentPoint) > racer1._bolidRadius) {
+                if (id1 === id2 || processed.includes(id2) || Racer.distance(racer1._position, racer2._position) > racer1._bolidRadius) {
                     return;
                 }
 
-                const collisionData = racer1.findCollisionData(racer1._physicalPoints, racer2._physicalPoints, racer1._currentPoint, racer2._currentPoint);
+                const collisionData = Racer.findCollisionData(racer1._physicalPoints, racer2._physicalPoints, racer1._position, racer2._position);
                 if (collisionData == null) {
                     return;
                 }
                 const [collisionNormal, collisionOverlap] = collisionData;
-                const collisionPoint = racer1.findCollisionPoint(racer1._physicalPoints, racer2._physicalPoints);
+                const collisionPoint = Racer.findCollisionPoint(racer1._physicalPoints, racer2._physicalPoints);
                 
                 const collisionVelocity1 = {
-                    x: racer1._velocity.x + racer1._angularVelocity * (collisionPoint.x - racer1._currentPoint.x),
-                    y: racer1._velocity.y + racer1._angularVelocity * (collisionPoint.y - racer1._currentPoint.y),
+                    x: racer1._velocity.x + racer1._angularVelocity * (collisionPoint.x - racer1._position.x),
+                    y: racer1._velocity.y + racer1._angularVelocity * (collisionPoint.y - racer1._position.y),
                 };
                 const collisionVelocity2 = {
-                    x: racer2._velocity.x + racer2._angularVelocity * (collisionPoint.x - racer2._currentPoint.x),
-                    y: racer2._velocity.y + racer2._angularVelocity * (collisionPoint.y - racer2._currentPoint.y),
+                    x: racer2._velocity.x + racer2._angularVelocity * (collisionPoint.x - racer2._position.x),
+                    y: racer2._velocity.y + racer2._angularVelocity * (collisionPoint.y - racer2._position.y),
                 };
                 
-                const velocityRel = racer1.scalar(racer1.vectorSub(collisionVelocity1, collisionVelocity2), collisionNormal);
+                const velocityRel = Racer.scalar(Racer.vectorSub(collisionVelocity1, collisionVelocity2), collisionNormal);
                 if (velocityRel >= 0) {
                     return;
                 }
 
-                const moment1 = racer1.scalar(racer1.vectorSub(collisionPoint, racer1._currentPoint), collisionNormal);
-                const moment2 = racer1.scalar(racer1.vectorSub(collisionPoint, racer2._currentPoint), collisionNormal);
+                const moment1 = Racer.scalar(Racer.vectorSub(collisionPoint, racer1._position), collisionNormal);
+                const moment2 = Racer.scalar(Racer.vectorSub(collisionPoint, racer2._position), collisionNormal);
                 const impulse = -(1 + racer1._collisionFading) * velocityRel / (2 + moment1 * moment1 / racer1._inertia + moment2 * moment2 / racer2._inertia);
 
                 racer1._velocity.x += impulse * collisionNormal.x;
@@ -377,15 +439,17 @@ class Racer {
                 racer1._angularVelocity += impulse * moment1 / racer1._inertia;
                 racer2._angularVelocity -= impulse * moment2 / racer2._inertia;
 
-                const correction = collisionOverlap * racer1._correctionFactor / (2);
+                const correction = collisionOverlap * racer1._correctionFactor / 2;
             
-                const correctionX = collisionNormal.x * correction;
-                const correctionY = collisionNormal.y * correction;
+                const positionCorrection = {
+                    x: collisionNormal.x * correction,
+                    y: collisionNormal.y * correction,
+                };
             
-                racer1._currentPoint.x += correctionX;
-                racer1._currentPoint.y += correctionY;
-                racer2._currentPoint.x -= correctionX;
-                racer2._currentPoint.y -= correctionY;
+                racer1._position.x += positionCorrection.x;
+                racer1._position.y += positionCorrection.y;
+                racer2._position.x -= positionCorrection.x;
+                racer2._position.y -= positionCorrection.y;
             });
             processed.push(id1);
         });
@@ -400,82 +464,86 @@ class Racer {
         };
     }
 
-    vector(point1, point2) {
+    static vector(point1, point2) {
         return {
             x: point2.x - point1.x,
             y: point2.y - point1.y,
         };
     }
 
-    vectorSum(vector1, vector2) {
+    static vectorSum(vector1, vector2) {
         return {
             x: vector1.x + vector2.x,
             y: vector1.y + vector2.y,
         };
     }
 
-    vectorSub(vector1, vector2) {
+    static vectorSub(vector1, vector2) {
         return {
             x: vector1.x - vector2.x,
             y: vector1.y - vector2.y,
         };
     }
 
-    normal(vector) {
+    static normal(vector) {
         return {
             x: vector.y, 
             y: -vector.x,
         };
     }
 
-    distance(point1, point2) {
+    static distance(point1, point2) {
         return Math.sqrt((point2.x - point1.x) * (point2.x - point1.x) + (point2.y - point1.y) * (point2.y - point1.y));
     }
 
-    length(vector) {
+    static length(vector) {
         return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
     }
 
-    normilize(vector) {
-        const length = this.length(vector);
+    static normalize(vector) {
+        const length = Racer.length(vector);
         return {
             x: vector.x / length, 
             y: vector.y / length,
         };
     }
 
-    rotate(vector, angle) {
+    static rotate(vector, angle) {
         return {
             x: vector.x * Math.cos(angle) - vector.y * Math.sin(angle),
             y: vector.x * Math.sin(angle) + vector.y * Math.cos(angle),
         };
     }
 
-    scalar(vector1, vector2) {
+    static scalar(vector1, vector2) {
         return vector1.x * vector2.x + vector1.y * vector2.y;
     }
 
-    angle(vector1, vector2) {
-        return Math.acos(this.scalar(vector1, vector2) / (this.length(vector1) * this.length(vector2)));
+    static angle(vector1, vector2) {
+        return Math.acos(Racer.scalar(vector1, vector2) / (Racer.length(vector1) * Racer.length(vector2)));
     }
 
-    project(vector, axis) {
-        const k = this.scalar(vector, axis) / this.scalar(axis, axis);
+    static angleSign(vector1, vector2) {
+        return (vector1.x * vector2.y - vector2.x * vector1.y) < 0 ? 1 : -1;
+    }
+
+    static project(vector, axis) {
+        const k = Racer.scalar(vector, axis) / Racer.scalar(axis, axis);
         return {
             x: k * axis.x,
             y: k * axis.y,
         };
     }
 
-    reproject(vector, basis) {
-        const normal = this.normal(basis);
+    static reproject(vector, basis) {
+        const normal = Racer.normal(basis);
         return {
             x: vector.lon * basis.x + vector.lat * normal.x,
             y: vector.lon * basis.y + vector.lat * normal.y,
         };
     }
 
-    projectPolygon(polygon, axis) {
+    static projectPolygon(polygon, axis) {
         let min = Infinity, max = -Infinity;
         for (const point of polygon) {
             const proj = point.x * axis.x + point.y * axis.y;
@@ -485,7 +553,7 @@ class Racer {
         return [min, max];
     }
 
-    findCollisionData(polygon1, polygon2, cp1, cp2) {
+    static findCollisionData(polygon1, polygon2, center1, center2) {
         let minOverlap = Infinity;
         let collisionNormal = { 
             x: 0, 
@@ -498,14 +566,14 @@ class Racer {
             for (let j = 0; j < polygon.length; j++) {
                 const point1 = polygon[j];
                 const point2 = polygon[(j + 1) % polygon.length];
-                const edge = this.vector(point1, point2);
-                const normal = this.normilize({
+                const edge = Racer.vector(point1, point2);
+                const normal = Racer.normalize({
                     x: -edge.x, 
                     y: edge.y
                 });
             
-                const [min1, max1] = this.projectPolygon(polygon1, normal);
-                const [min2, max2] = this.projectPolygon(polygon2, normal);
+                const [min1, max1] = Racer.projectPolygon(polygon1, normal);
+                const [min2, max2] = Racer.projectPolygon(polygon2, normal);
                 if (max1 < min2 || max2 < min1) {
                     return null;
                 }
@@ -519,9 +587,9 @@ class Racer {
             }
         }
         
-        const direction = this.vector(cp2, cp1);
+        const direction = Racer.vector(center2, center1);
         
-        if (this.scalar(collisionNormal, direction) < 0) {
+        if (Racer.scalar(collisionNormal, direction) < 0) {
           collisionNormal.x *= -1;
           collisionNormal.y *= -1;
         }
@@ -529,12 +597,12 @@ class Racer {
         return [collisionNormal, minOverlap];
     }
 
-    findCollisionPoint(polygon1, polygon2) {
+    static findCollisionPoint(polygon1, polygon2) {
         let minDist = Infinity;
         let nearestPoints = [];
         for (const point1 of polygon1) {
             for (const point2 of polygon2) {
-                const dist = this.distance(point1, point2);
+                const dist = Racer.distance(point1, point2);
                 if (dist < minDist) {
                     minDist = dist;
                     nearestPoints = [point1, point2];
@@ -547,20 +615,28 @@ class Racer {
         };
     }
 
-    getRandomInt(min, max) {
+    static getRandomInt(min, max) {
         const minCeiled = Math.ceil(min);
         const maxFloored = Math.floor(max);
         return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
     }
 
-    getRandomDouble(min, max) {
+    static getRandomDouble(min, max) {
         return Math.random() * (max - min) + min;
+    }
+
+    static shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
     }
 
     generateStar() {
         return {
-            x: this.getRandomInt(this._bolidRadius, this._width - this._bolidRadius), 
-            y: this.getRandomInt(this._bolidRadius, this._height - this._bolidRadius),
+            x: Racer.getRandomInt(this._bolidRadius, this._width - this._bolidRadius), 
+            y: Racer.getRandomInt(this._bolidRadius, this._height - this._bolidRadius),
         };
     }
 }

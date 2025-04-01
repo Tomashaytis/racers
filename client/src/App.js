@@ -52,7 +52,7 @@ function App() {
         clientApi.action(action);
     }, []);
 
-    useTimer(config.SEND_INTERVAL, handleKeys, role === 'player');
+    useTimer(clientApi.sendInterval, handleKeys, role === 'player');
 
     return (
         <ClientApiContext.Provider value={clientApi}>

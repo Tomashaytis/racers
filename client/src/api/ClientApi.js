@@ -9,6 +9,7 @@ class ClientApi {
         this._reconnectAttempts = 0;
         this._maxReconnectAttempts = maxReconnectAttemps;
         this._reconnectInterval = reconnectInterval;
+        this._sendInterval = 0;
         this._reconnectTimer = null;
         this._dataCallback = (data) => {};
         this._playersCallback = (data) => {};
@@ -19,46 +20,8 @@ class ClientApi {
         this.initSocket();
     }
 
-    initSocket() {
-        if (this._socket) {
-            this._socket.removeEventListener('open', this.handleClose);
-            this._socket.removeEventListener('message', this.handleError);
-            this._socket.close();
-        }
-
-        this._socket = new WebSocket(this._url);
-
-        this._socket.addEventListener('open', () => {
-            console.log(`Connection to ${this._url} opened`);
-            this._reconnectAttempts = 0;
-        });
-  
-        this._socket.addEventListener('message', (event) => {
-            const data = JSON.parse(event.data);
-            this.handleServerMessage(data);
-        });
-
-        this._socket.addEventListener('close', (event) => {
-            console.log(`Connection closed (code: ${event.code}, reason: ${event.reason}`);
-            if (event.code !== 1000) {
-                this.reconnect();
-            }
-        });
-
-        this._socket.addEventListener('error', (error) => {
-            console.log(`Connection error: ${error}`);
-        });
-    }
-
-    handleClose(event) {
-        console.log(`Connection closed (code: ${event.code}, reason: ${event.reason}`);
-        if (event.code !== 1000) {
-            this.reconnect();
-        }
-    }
-
-    handleError(error) {
-        console.log(`Connection error: ${error}`);
+    get sendInterval() {
+        return this._sendInterval;
     }
 
     get role() {
@@ -105,6 +68,48 @@ class ClientApi {
         this._playerColor = value;
     }
 
+    initSocket() {
+        if (this._socket) {
+            this._socket.removeEventListener('open', this.handleClose);
+            this._socket.removeEventListener('message', this.handleError);
+            this._socket.close();
+        }
+
+        this._socket = new WebSocket(this._url);
+
+        this._socket.addEventListener('open', () => {
+            console.log(`Connection to ${this._url} opened`);
+            this._reconnectAttempts = 0;
+        });
+  
+        this._socket.addEventListener('message', (event) => {
+            const data = JSON.parse(event.data);
+            this.handleServerMessage(data);
+        });
+
+        this._socket.addEventListener('close', (event) => {
+            console.log(`Connection closed (code: ${event.code}, reason: ${event.reason}`);
+            if (event.code !== 1000) {
+                this.reconnect();
+            }
+        });
+
+        this._socket.addEventListener('error', (error) => {
+            console.log(`Connection error: ${error}`);
+        });
+    }
+
+    handleClose(event) {
+        console.log(`Connection closed (code: ${event.code}, reason: ${event.reason}`);
+        if (event.code !== 1000) {
+            this.reconnect();
+        }
+    }
+
+    handleError(error) {
+        console.log(`Connection error: ${error}`);
+    }
+
     join(playerName, playerColor) {
         this._playerName = playerName;
         this._playerColor = playerColor;
@@ -145,6 +150,7 @@ class ClientApi {
         switch(data.type) {
             case 'INIT':
                 this._connectionId = data.playerId;
+                this._sendInterval = data._sendInterval;
                 this._role = 'watcher';
                 this._roleCallback()
                 console.log(data.message);
