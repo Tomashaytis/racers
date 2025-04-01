@@ -7,7 +7,7 @@ import config from './config';
 import clientApi from './api/ClientApi';
 import { ClientApiContext } from './contexts/ClientApiContext';
 import { useTimer } from './hooks/useTimer';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
 
@@ -42,15 +42,17 @@ function App() {
         };
     }, [players]);
 
-    useTimer(config.SEND_INTERVAL, (pressedKeys) => {
+    const handleKeys = useCallback((pressedKeys) => {
         const action = {
             forward: pressedKeys.includes('w'),
             backward: pressedKeys.includes('s'),
             left: pressedKeys.includes('a'),
             right: pressedKeys.includes('d'),
-        }
+        };
         clientApi.action(action);
-    }, role === 'player');
+    }, []);
+
+    useTimer(config.SEND_INTERVAL, handleKeys, role === 'player');
 
     return (
         <ClientApiContext.Provider value={clientApi}>

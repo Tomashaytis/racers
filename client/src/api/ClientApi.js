@@ -93,14 +93,22 @@ class ClientApi {
         return this._playerName;
     }
 
+    set playerName(value) {
+        this._playerName = value;
+    }
+
     get playerColor() {
         return this._playerColor;
     }
 
+    set playerColor(value) {
+        this._playerColor = value;
+    }
+
     join(playerName, playerColor) {
-        console.log('Joining to game...');
         this._playerName = playerName;
         this._playerColor = playerColor;
+        console.log('Joining to game...');
         this.send({
             type: 'JOIN',
             message: 'Join request',

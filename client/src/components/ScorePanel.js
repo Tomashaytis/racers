@@ -6,7 +6,7 @@ function ScorePanel(props) {
     const clientApi = useContext(ClientApiContext); 
     let playerScore = '?';
     let playerPlace = '?';
-    if (clientApi.playerName !== null) {
+    if (clientApi.playerName !== '') {
         for (let player of props.players) {
             if (player.name === clientApi.playerName) {
                 playerScore = player.score;

@@ -11,7 +11,7 @@ function PlayerPanel(props) {
     };
 
     const existingNames = [];
-    const availableColors = props.colors;
+    let availableColors = structuredClone(props.colors);
     for (let player of props.players) {
         existingNames.push(player.name);
         const index = availableColors.indexOf(player.color);
@@ -19,11 +19,6 @@ function PlayerPanel(props) {
             availableColors.splice(index, 1);
         }
     }
-
-    const [playerColor, setSelectedColor] = useState(availableColors[0]);
-    const handleColorChange = (e) => {
-        setSelectedColor(e.target.value);
-    };
 
     const [isJoin, setJoinValue] = useState(true);
     const changeButtonState = () => {
@@ -40,7 +35,8 @@ function PlayerPanel(props) {
         } else {
             if (isJoin) {
                 changeButtonState();
-                clientApi?.join(playerName, playerColor);
+                const currentColor = document.querySelector('.select-color').value;
+                clientApi?.join(playerName, currentColor);
             }
             else {
                 changeButtonState();
@@ -52,7 +48,7 @@ function PlayerPanel(props) {
     return (
         <div className="player-panel">
             <input type='text' className='input-name' placeholder='Your name' disabled={!isJoin} onChange={handlePlayerNameChange}></input>
-            <select className='select-color' disabled={!isJoin} onChange={handleColorChange}> {
+            <select className='select-color' disabled={!isJoin}> {
                     availableColors.map((color, index) => (
                         <option key={index} value={color}>{color}</option>
                     )

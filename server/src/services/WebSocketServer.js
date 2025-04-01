@@ -8,6 +8,7 @@ class WebSocketServer {
         this._maxWatchersCount = config.MAX_WATCHERS_COUNT;
         this._maxPlayersCount = config.MAX_PLAYERS_COUNT;
         this._sendInterval = config.SEND_INTERVAL;
+        this._simulateInterval = config.SIMULATE_INTERVAL;
         this._maxNameLength =  config.MAX_NAME_LENGTH;
         this._colors = config.COLORS;
         this._width = config.WIDTH;
@@ -44,9 +45,6 @@ class WebSocketServer {
             const sendIntervalId = setInterval(() => {
                 const data = []
                 this._racers.forEach((racer, id) => {
-                    if (racer.move(this._star)) {
-                        this._star = racer.generateStar();
-                    }
                     data.push(racer.toDto());
                 });
 
@@ -114,6 +112,15 @@ class WebSocketServer {
                 ws.terminate();
             });
         });
+        
+        const simulateIntervalId = setInterval(() => {
+            this._racers.forEach((racer, id) => {
+                if (racer.move(this._star)) {
+                    this._star = racer.generateStar();
+                }
+            });
+            Racer.bolidCollisions(this._racers);
+        }, this._simulateInterval);
     }
 
     broadcast(data) {

@@ -10,7 +10,7 @@ export const useTimer = (interval, callback, isActive) => {
     })
 
     useEffect(() => {
-        if (!isActive) {
+        if (!(isActive)) {
             if (timerId.current) {
                 clearInterval(timerId.current);
                 timerId.current = null;
@@ -44,7 +44,7 @@ export const useTimer = (interval, callback, isActive) => {
             window.removeEventListener('keydown', onKeyDown);
             window.removeEventListener('keyup', onKeyUp);
             if (timerId.current) {
-                clearInterval(timerId);
+                clearInterval(timerId.current);
             }
         };
     }, [interval, callback, isActive]);
