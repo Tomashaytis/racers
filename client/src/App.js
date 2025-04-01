@@ -32,6 +32,7 @@ function App() {
                     name: figure.name,
                     color: figure.color,
                     score: figure.score,
+                    isBot: figure.isBot,
                 });
             }
             setPlayers(playerData);
@@ -75,7 +76,7 @@ function App() {
                         </div>
                     </div>
                     <div className='game-info-panel'>
-                        <InfoPanel playerCount={players.length} aiPlayerCount='0' />
+                        <InfoPanel players={players} />
                     </div>
                 </div>
             </main>

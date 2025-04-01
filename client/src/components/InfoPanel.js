@@ -1,10 +1,15 @@
 import './InfoPanel.css';
 
-function InfoPanel({ playerCount, aiPlayerCount }) {
+function InfoPanel(props) {
+    let playersCount = 0;
+    let aiPlayersCount = 0;
+    for (const player of props.players) {
+        player.isBot ? aiPlayersCount++ : playersCount++;
+    }
     return (
         <div className="info-panel">
-            <div className='player-count'>Racers: {playerCount}</div>
-            <div className='ai-player-count'>Bots: {aiPlayerCount}</div>
+            <div className='player-count'>Racers: {playersCount}</div>
+            <div className='ai-player-count'>Bots: {aiPlayersCount}</div>
         </div>
     )
 }

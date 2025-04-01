@@ -1,3 +1,5 @@
+const Random = require('./Random');
+
 class Racer {
     constructor(name, color, bolidSize, velocityLimit, engineOnTtl, isBot, width, height, avoidedPoints = [], startPoint = null, startDirection = null) {
         // General params
@@ -14,8 +16,8 @@ class Racer {
         if (startPoint == null) {
             while (true) {
                 this._position = {
-                    x: Racer.getRandomInt(this._bolidRadius, width - this._bolidRadius), 
-                    y: Racer.getRandomInt(this._bolidRadius, height - this._bolidRadius),
+                    x: Random.getRandomInt(this._bolidRadius, width - this._bolidRadius), 
+                    y: Random.getRandomInt(this._bolidRadius, height - this._bolidRadius),
                 };
                 let success = true
                 for (let point of avoidedPoints) {
@@ -36,7 +38,7 @@ class Racer {
                 x: 1, 
                 y: 0,
             };
-            const turnAngle = Racer.getRandomDouble(-Math.PI, Math.PI);
+            const turnAngle = Random.getRandomDouble(-Math.PI, Math.PI);
             this._direction = Racer.rotate(this._direction, turnAngle);
         } else {
             this._direction = startPoint;
@@ -205,7 +207,7 @@ class Racer {
 
         if (Racer.distance(this._prevPosition, this._position) < this._noMoveDistance) {
             this._stopCounter += 1;
-        } else if (this._stopCounter > 0 && Racer.getRandomInt(0, 4) === 0){
+        } else if (this._stopCounter > 0 && Random.getRandomInt(0, 4) === 0){
             this._stopCounter -= 1;
         }
 
@@ -225,13 +227,13 @@ class Racer {
         if (this._moveMode === 'forward') {
             if (Racer.distance(this._position, star) > this._brakingRadius) {
                 this._forwardOnTtl = this._engineOnTtl;
-            } else if (Racer.getRandomInt(0, this._brakingValue) === 1) {
+            } else if (Random.getRandomInt(0, this._brakingValue) === 1) {
                 this._forwardOnTtl = this._engineOnTtl;
             }
         } else {
             if (Racer.distance(this._position, star) > this._brakingRadius) {
                 this._backwardOnTtl = this._engineOnTtl;
-            } else if (Racer.getRandomInt(0, this._brakingValue) === 1) {
+            } else if (Random.getRandomInt(0, this._brakingValue) === 1) {
                 this._backwardOnTtl = this._engineOnTtl;
             }
         }
@@ -460,6 +462,7 @@ class Racer {
             name: this._name,
             color: this._color,
             score: this._score,
+            isBot: this._isBot, 
             points: this._physicalPoints,
         };
     }
@@ -615,28 +618,10 @@ class Racer {
         };
     }
 
-    static getRandomInt(min, max) {
-        const minCeiled = Math.ceil(min);
-        const maxFloored = Math.floor(max);
-        return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
-    }
-
-    static getRandomDouble(min, max) {
-        return Math.random() * (max - min) + min;
-    }
-
-    static shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
     generateStar() {
         return {
-            x: Racer.getRandomInt(this._bolidRadius, this._width - this._bolidRadius), 
-            y: Racer.getRandomInt(this._bolidRadius, this._height - this._bolidRadius),
+            x: Random.getRandomInt(this._bolidRadius, this._width - this._bolidRadius), 
+            y: Random.getRandomInt(this._bolidRadius, this._height - this._bolidRadius),
         };
     }
 }

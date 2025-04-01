@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const Racer = require('./Racer');
+const Random = require('./Random');
 
 
 class WebSocketServer {
@@ -238,8 +239,8 @@ class WebSocketServer {
                             freeColors.push(color);
                         }
                     }
-                    freeNames = Racer.shuffle(freeNames);
-                    freeColors = Racer.shuffle(freeColors);
+                    freeNames = Random.shuffle(freeNames);
+                    freeColors = Random.shuffle(freeColors);
                     const shift = this._currentBotsCount;
                     for (let i = this._currentBotsCount; i < Math.min(this._maxBotsCount, this._maxPlayersCount - this._playersIds.length); i++) {
                         let botName = freeNames[i - shift];
