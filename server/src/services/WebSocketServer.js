@@ -113,6 +113,13 @@ class WebSocketServer {
                         if (index !== -1) {
                             this._playersIds.splice(index, 1);
                         }
+                        if (this._playersIds.length === 0) {
+                            this._racers = new Map();
+                            this._racersNames = [];
+                            this._racersColors = [];
+                            this._star = null;
+                            this._currentBotsCount = 0;
+                        }
                     }
                 }
                 console.log(`User ${connectionId} disconected`);
@@ -138,6 +145,13 @@ class WebSocketServer {
                         index = this._playersIds.indexOf(connectionId);
                         if (index !== -1) {
                             this._playersIds.splice(index, 1);
+                        }
+                        if (this._playersIds.length === 0) {
+                            this._racers = new Map();
+                            this._racersNames = [];
+                            this._racersColors = [];
+                            this._star = null;
+                            this._currentBotsCount = 0;
                         }
                     }
                 }
