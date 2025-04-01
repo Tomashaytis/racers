@@ -1,12 +1,29 @@
 const Random = require('./Random');
 
+/**
+ * Class Racer for implementation player movement physics
+ */
 class Racer {
-    constructor(name, color, bolidSize, velocityLimit, engineOnTtl, isBot, width, height, avoidedPoints = [], startPoint = null, startDirection = null) {
+    /**
+     * Constructor for Racer object
+     * @param {string} name - racer name
+     * @param {string} color - racer color
+     * @param {number} bolideSize - size of bolide
+     * @param {number} velocityLimit - limit for velocity of bolide
+     * @param {number} engineOnTtl - time to live of forward or backward acceleration/left or right angular velocity
+     * @param {boolean} isBot - is racer bot
+     * @param {number} width - width of game field
+     * @param {number} height - heigth of game field
+     * @param {Array} avoidedPoints - centers of other racers
+     * @param {object} startPoint - start position for racer (if null then random)
+     * @param {object} startDirection - start direction of racer (if null then random)
+     */
+    constructor(name, color, bolideSize, velocityLimit, engineOnTtl, isBot, width, height, avoidedPoints = [], startPoint = null, startDirection = null) {
         // General params
         this._name = name;
         this._color = color;
-        this._bolidSize = bolidSize;
-        this._bolidRadius = this._bolidSize * 10;
+        this._bolideSize = bolideSize;
+        this._bolideRadius = this._bolideSize * 10;
         this._pickRadius = 10;
         this._score = 0;
         this._isBot = isBot;
@@ -16,12 +33,12 @@ class Racer {
         if (startPoint == null) {
             while (true) {
                 this._position = {
-                    x: Random.getRandomInt(this._bolidRadius, width - this._bolidRadius), 
-                    y: Random.getRandomInt(this._bolidRadius, height - this._bolidRadius),
+                    x: Random.getRandomInt(this._bolideRadius, width - this._bolideRadius), 
+                    y: Random.getRandomInt(this._bolideRadius, height - this._bolideRadius),
                 };
                 let success = true
-                for (let point of avoidedPoints) {
-                    if (Racer.distance(point, this._position) < this._bolidRadius) {
+                for (const point of avoidedPoints) {
+                    if (Racer.distance(point, this._position) < this._bolideRadius) {
                         success = false;
                         break;
                     }
@@ -47,14 +64,14 @@ class Racer {
         this.generatePoints();
 
         // Shape params
-        this._bolideHeadLength = this._bolidSize * 8;
-        this._bolideFrontLength = this._bolidSize * 6;
-        this._bolideMiddleLength = this._bolidSize * 2;
-        this._bolideBackLength = this._bolidSize * 8;
-        this._bolideTailLength = this._bolidSize * 6;
-        this._bolideFrontWidth = this._bolidSize * 2;
-        this._bolideMiddleWidth = this._bolidSize * 4;
-        this._bolideBackWidth = this._bolidSize * 3;
+        this._bolideHeadLength = this._bolideSize * 8;
+        this._bolideFrontLength = this._bolideSize * 6;
+        this._bolideMiddleLength = this._bolideSize * 2;
+        this._bolideBackLength = this._bolideSize * 8;
+        this._bolideTailLength = this._bolideSize * 6;
+        this._bolideFrontWidth = this._bolideSize * 2;
+        this._bolideMiddleWidth = this._bolideSize * 4;
+        this._bolideBackWidth = this._bolideSize * 3;
 
         // General move params
         this._engineOnTtl = engineOnTtl;
@@ -108,22 +125,37 @@ class Racer {
         this._noMoveDistance = 10;
     }
 
+    /**
+     * Getter for racer position
+     */
     get position() {
         return this._position;
     }
 
+    /**
+     * Getter for racer name
+     */
     get name() {
         return this._name;
     }
 
+    /**
+     * Getter for racer color
+     */
     get color() {
         return this._color;
     }
 
+    /**
+     * Getter for racer racer type (bot or not)
+     */
     get isBot() {
         return this._isBot;
     }
 
+    /**
+     * Generating corner points that define a shape of bolide
+     */
     generatePoints() {
         this._physicalPoints = [];
 
@@ -168,6 +200,10 @@ class Racer {
         });
     }
 
+    /**
+     * Setting engine based of player actions
+     * @param {object} actions - player actions
+     */
     setEngine(actions) {
         if (actions.forward) {
             this._forwardOnTtl = this._engineOnTtl;
@@ -194,6 +230,10 @@ class Racer {
         }
     }
 
+    /**
+     * Setting engine based of bot actions
+     * @param {object} star - coordinates of star
+     */
     AutoEngine(star) {
         const target = Racer.normalize(Racer.vector(this._position, star));
         const angle = Racer.angleSign(this._direction, target) * Racer.angle(this._direction, target);
@@ -240,6 +280,9 @@ class Racer {
         this._prevPosition = this._position;
     }
 
+    /**
+     * Convertation of engine parameters to acceleration and angular velocity values
+     */
     useEngine() {
         this._accelerationRel = {
             lon: 0,
@@ -294,7 +337,12 @@ class Racer {
             this._backwardOnTtl -= 1;
         }
     }
-
+    
+    /**
+     * Bolide moving accross the game field and calculating collisions with borders 
+     * @param {object} star - coordinates of star
+     * @returns true if star is picked and false otherwise
+     */
     move(star) {
         this.useEngine();
 
@@ -325,7 +373,7 @@ class Racer {
         this._direction = Racer.rotate(this._direction, angle);
         this._normal = Racer.normal(this._direction);
 
-        if (Racer.distance(this._position, { x: this._position.x, y: 0 }) < this._bolidRadius) {
+        if (Racer.distance(this._position, { x: this._position.x, y: 0 }) < this._bolideRadius) {
             let first = true;
             const corrections = [0];
             for(let point of this._physicalPoints) {
@@ -340,7 +388,7 @@ class Racer {
             }
             this._position.y += Math.max(...corrections);
         }
-        if (Racer.distance(this._position, { x: this._position.x, y: this._height - 1 }) < this._bolidRadius) {
+        if (Racer.distance(this._position, { x: this._position.x, y: this._height - 1 }) < this._bolideRadius) {
             let first = true;
             const corrections = [0];
             for(let point of this._physicalPoints) {
@@ -355,7 +403,7 @@ class Racer {
             }
             this._position.y -= Math.max(...corrections);
         }
-        if (Racer.distance(this._position, { x: 0, y: this._position.y }) < this._bolidRadius) {
+        if (Racer.distance(this._position, { x: 0, y: this._position.y }) < this._bolideRadius) {
             let first = true;
             const corrections = [0];
             for(let point of this._physicalPoints) {
@@ -370,7 +418,7 @@ class Racer {
             }
             this._position.x += Math.max(...corrections);
         }
-        if (Racer.distance(this._position, { x: this._width, y: this._position.y }) < this._bolidRadius) {
+        if (Racer.distance(this._position, { x: this._width, y: this._position.y }) < this._bolideRadius) {
             let first = true;
             const corrections = [0];
             for(let point of this._physicalPoints) {
@@ -388,7 +436,7 @@ class Racer {
 
         this.generatePoints();
 
-        if (Racer.distance(star, this._position) > this._bolidRadius) {
+        if (Racer.distance(star, this._position) > this._bolideRadius) {
             return false;
         }
         for(let point of this._physicalPoints) {
@@ -400,7 +448,285 @@ class Racer {
         return false;
     }
 
-    static bolidCollisions(racers) {
+    /**
+     * Convertation of racer object to DTO
+     * @returns DTO
+     */
+    toDto() {
+        return {
+            name: this._name,
+            color: this._color,
+            score: this._score,
+            isBot: this._isBot, 
+            points: this._physicalPoints,
+        };
+    }
+
+    /**
+     * Generation random star position on the game field 
+     * @returns 
+     */
+    generateStar() {
+        return {
+            x: Random.getRandomInt(this._bolideRadius, this._width - this._bolideRadius), 
+            y: Random.getRandomInt(this._bolideRadius, this._height - this._bolideRadius),
+        };
+    }
+
+    /**
+     * Calculating vector coordinates from two points
+     * @param {object} point1 - start vector point
+     * @param {object} point2 - end vector point
+     * @returns vector coordinates
+     */
+    static vector(point1, point2) {
+        return {
+            x: point2.x - point1.x,
+            y: point2.y - point1.y,
+        };
+    }
+
+    /**
+     * Calculating summation of two vectors
+     * @param {object} vector1 - first vector
+     * @param {object} vector2 - second vector
+     * @returns summation of two vectors
+     */
+    static vectorSum(vector1, vector2) {
+        return {
+            x: vector1.x + vector2.x,
+            y: vector1.y + vector2.y,
+        };
+    }
+
+    /**
+     * Calculating substraction of two vectors
+     * @param {object} vector1 - first vector
+     * @param {object} vector2 - second vector
+     * @returns substraction of two vectors
+     */
+    static vectorSub(vector1, vector2) {
+        return {
+            x: vector1.x - vector2.x,
+            y: vector1.y - vector2.y,
+        };
+    }
+
+    /**
+     * Calculating normal for vector
+     * @param {object} vector - vector
+     * @returns normal for vector (not normalized)
+     */
+    static normal(vector, invertFirst=false) {
+        if (invertFirst) {
+            return {
+                x: -vector.y, 
+                y: vector.x,
+            };
+        }
+        return {
+            x: vector.y, 
+            y: -vector.x,
+        };
+    }
+    
+    /**
+     * Calculating distance between two points
+     * @param {object} point1 - first point
+     * @param {object} point2 - second point
+     * @returns distance between two points
+     */
+    static distance(point1, point2) {
+        return Math.sqrt((point2.x - point1.x) * (point2.x - point1.x) + (point2.y - point1.y) * (point2.y - point1.y));
+    }
+
+    /**
+     * Calculating vector length
+     * @param {object} vector - vector
+     * @returns vector length
+     */
+    static length(vector) {
+        return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+    }
+
+    /**
+     * Normalizing vector
+     * @param {object} vector - vector
+     * @returns normalized vector
+     */
+    static normalize(vector) {
+        const length = Racer.length(vector);
+        return {
+            x: vector.x / length, 
+            y: vector.y / length,
+        };
+    }
+
+    /**
+     * Vector rotation for some angle
+     * @param {object} vector - vector
+     * @param {number} angle - turn angle
+     * @returns rotated vector
+     */
+    static rotate(vector, angle) {
+        return {
+            x: vector.x * Math.cos(angle) - vector.y * Math.sin(angle),
+            y: vector.x * Math.sin(angle) + vector.y * Math.cos(angle),
+        };
+    }
+
+    /**
+     * Calculating scalar multiplication of two vectors
+     * @param {object} vector1 - first vector
+     * @param {object} vector2 - second vector
+     * @returns scalar multiplication of two vectors
+     */
+    static scalar(vector1, vector2) {
+        return vector1.x * vector2.x + vector1.y * vector2.y;
+    }
+
+    /**
+     * Calculating angle between two vectors in range [0, PI]
+     * @param {object} vector1 - first vector
+     * @param {object} vector2 - second vector
+     * @returns angle between two vectors in range [0, PI]
+     */
+    static angle(vector1, vector2) {
+        return Math.acos(Racer.scalar(vector1, vector2) / (Racer.length(vector1) * Racer.length(vector2)));
+    }
+
+    /**
+     * Calculating angle sign between two vectors
+     * @param {object} vector1 - first vector
+     * @param {object} vector2 - second vector
+     * @returns angle sign between two vectors
+     */
+    static angleSign(vector1, vector2) {
+        return (vector1.x * vector2.y - vector2.x * vector1.y) < 0 ? 1 : -1;
+    }
+
+    /**
+     * Projection of vector on some axis
+     * @param {object} vector - vector
+     * @param {object} axis - axis
+     * @returns vector projection on some axis
+     */
+    static project(vector, axis) {
+        const k = Racer.scalar(vector, axis) / Racer.scalar(axis, axis);
+        return {
+            x: k * axis.x,
+            y: k * axis.y,
+        };
+    }
+
+    /**
+     * Convertation of coordinate system (lat, lon) to coordinate system (x, y)
+     * @param {object} vector - vector in coordinate system (lat, lon)
+     * @param {object} basis - basis vector in coordinate system (x, y)
+     * @returns vector in coordinate system (x, y)
+     */
+    static reproject(vector, basis) {
+        const normal = Racer.normal(basis);
+        return {
+            x: vector.lon * basis.x + vector.lat * normal.x,
+            y: vector.lon * basis.y + vector.lat * normal.y,
+        };
+    }
+
+    /**
+     * Projection of polygon to some axis
+     * @param {Array} polygon - polygon
+     * @param {object} axis - axis
+     * @returns - polygon projection for mtv algorithm
+     */
+    static projectPolygon(polygon, axis) {
+        let min = Infinity, max = -Infinity;
+        for (const point of polygon) {
+            const proj = point.x * axis.x + point.y * axis.y;
+            min = Math.min(min, proj);
+            max = Math.max(max, proj);
+        }
+        return [min, max];
+    }
+
+    /**
+     * Implementation of MTV algorithm (detects collision, finds collision normal and overlap for two polygons)
+     * @param {Array} polygon1 - first polygon
+     * @param {Array} polygon2 - second polygon
+     * @param {object} center1 - center of first polygon
+     * @param {object} center2 - center of second polygon
+     * @returns null if collision not detected and collision normal with overlap otherwise
+     */
+    static findCollisionData(polygon1, polygon2, center1, center2) {
+        let minOverlap = Infinity;
+        let collisionNormal = { 
+            x: 0, 
+            y: 0
+        };
+        
+        const polygons = [polygon1, polygon2];
+        for (let i = 0; i < polygons.length; i++) {
+            const polygon = polygons[i];
+            for (let j = 0; j < polygon.length; j++) {
+                const point1 = polygon[j];
+                const point2 = polygon[(j + 1) % polygon.length];
+                const edge = Racer.vector(point1, point2);
+                const normal = Racer.normalize(Racer.normal(edge, true));
+            
+                const [min1, max1] = Racer.projectPolygon(polygon1, normal);
+                const [min2, max2] = Racer.projectPolygon(polygon2, normal);
+                if (max1 < min2 || max2 < min1) {
+                    return null;
+                }
+
+                const overlap = Math.min(max1, max2) - Math.max(min1, min2);
+            
+                if (overlap < minOverlap) {
+                    minOverlap = overlap;
+                    collisionNormal = normal;
+                }
+            }
+        }
+        
+        const direction = Racer.vector(center2, center1);
+        
+        if (Racer.scalar(collisionNormal, direction) < 0) {
+          collisionNormal.x *= -1;
+          collisionNormal.y *= -1;
+        }
+        
+        return [collisionNormal, minOverlap];
+    }
+
+    /**
+     * Calculating collision point for two polygons
+     * @param {Array} polygon1 - first polygon
+     * @param {Array} polygon2 - second polygon
+     * @returns collision point for two polygons
+     */
+    static findCollisionPoint(polygon1, polygon2) {
+        let minDist = Infinity;
+        let nearestPoints = [];
+        for (const point1 of polygon1) {
+            for (const point2 of polygon2) {
+                const dist = Racer.distance(point1, point2);
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearestPoints = [point1, point2];
+                }
+            }
+        }
+        return {
+            x: (nearestPoints[0].x + nearestPoints[1].x) / 2,
+            y: (nearestPoints[0].y + nearestPoints[1].y) / 2,
+        };
+    }
+
+    /**
+     * Processing bolide collisions with each other
+     * @param {Map} racers - racers
+     */
+    static bolideCollisions(racers) {
         const processed = [];
         racers.forEach((racer1, id1) => {
             racers.forEach((racer2, id2) => {
@@ -455,174 +781,6 @@ class Racer {
             });
             processed.push(id1);
         });
-    }
-
-    toDto() {
-        return {
-            name: this._name,
-            color: this._color,
-            score: this._score,
-            isBot: this._isBot, 
-            points: this._physicalPoints,
-        };
-    }
-
-    static vector(point1, point2) {
-        return {
-            x: point2.x - point1.x,
-            y: point2.y - point1.y,
-        };
-    }
-
-    static vectorSum(vector1, vector2) {
-        return {
-            x: vector1.x + vector2.x,
-            y: vector1.y + vector2.y,
-        };
-    }
-
-    static vectorSub(vector1, vector2) {
-        return {
-            x: vector1.x - vector2.x,
-            y: vector1.y - vector2.y,
-        };
-    }
-
-    static normal(vector) {
-        return {
-            x: vector.y, 
-            y: -vector.x,
-        };
-    }
-
-    static distance(point1, point2) {
-        return Math.sqrt((point2.x - point1.x) * (point2.x - point1.x) + (point2.y - point1.y) * (point2.y - point1.y));
-    }
-
-    static length(vector) {
-        return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-    }
-
-    static normalize(vector) {
-        const length = Racer.length(vector);
-        return {
-            x: vector.x / length, 
-            y: vector.y / length,
-        };
-    }
-
-    static rotate(vector, angle) {
-        return {
-            x: vector.x * Math.cos(angle) - vector.y * Math.sin(angle),
-            y: vector.x * Math.sin(angle) + vector.y * Math.cos(angle),
-        };
-    }
-
-    static scalar(vector1, vector2) {
-        return vector1.x * vector2.x + vector1.y * vector2.y;
-    }
-
-    static angle(vector1, vector2) {
-        return Math.acos(Racer.scalar(vector1, vector2) / (Racer.length(vector1) * Racer.length(vector2)));
-    }
-
-    static angleSign(vector1, vector2) {
-        return (vector1.x * vector2.y - vector2.x * vector1.y) < 0 ? 1 : -1;
-    }
-
-    static project(vector, axis) {
-        const k = Racer.scalar(vector, axis) / Racer.scalar(axis, axis);
-        return {
-            x: k * axis.x,
-            y: k * axis.y,
-        };
-    }
-
-    static reproject(vector, basis) {
-        const normal = Racer.normal(basis);
-        return {
-            x: vector.lon * basis.x + vector.lat * normal.x,
-            y: vector.lon * basis.y + vector.lat * normal.y,
-        };
-    }
-
-    static projectPolygon(polygon, axis) {
-        let min = Infinity, max = -Infinity;
-        for (const point of polygon) {
-            const proj = point.x * axis.x + point.y * axis.y;
-            min = Math.min(min, proj);
-            max = Math.max(max, proj);
-        }
-        return [min, max];
-    }
-
-    static findCollisionData(polygon1, polygon2, center1, center2) {
-        let minOverlap = Infinity;
-        let collisionNormal = { 
-            x: 0, 
-            y: 0
-        };
-        
-        const polygons = [polygon1, polygon2];
-        for (let i = 0; i < polygons.length; i++) {
-            const polygon = polygons[i];
-            for (let j = 0; j < polygon.length; j++) {
-                const point1 = polygon[j];
-                const point2 = polygon[(j + 1) % polygon.length];
-                const edge = Racer.vector(point1, point2);
-                const normal = Racer.normalize({
-                    x: -edge.x, 
-                    y: edge.y
-                });
-            
-                const [min1, max1] = Racer.projectPolygon(polygon1, normal);
-                const [min2, max2] = Racer.projectPolygon(polygon2, normal);
-                if (max1 < min2 || max2 < min1) {
-                    return null;
-                }
-
-                const overlap = Math.min(max1, max2) - Math.max(min1, min2);
-            
-                if (overlap < minOverlap) {
-                    minOverlap = overlap;
-                    collisionNormal = normal;
-                }
-            }
-        }
-        
-        const direction = Racer.vector(center2, center1);
-        
-        if (Racer.scalar(collisionNormal, direction) < 0) {
-          collisionNormal.x *= -1;
-          collisionNormal.y *= -1;
-        }
-        
-        return [collisionNormal, minOverlap];
-    }
-
-    static findCollisionPoint(polygon1, polygon2) {
-        let minDist = Infinity;
-        let nearestPoints = [];
-        for (const point1 of polygon1) {
-            for (const point2 of polygon2) {
-                const dist = Racer.distance(point1, point2);
-                if (dist < minDist) {
-                    minDist = dist;
-                    nearestPoints = [point1, point2];
-                }
-            }
-        }
-        return {
-            x: (nearestPoints[0].x + nearestPoints[1].x) / 2,
-            y: (nearestPoints[0].y + nearestPoints[1].y) / 2,
-        };
-    }
-
-    generateStar() {
-        return {
-            x: Random.getRandomInt(this._bolidRadius, this._width - this._bolidRadius), 
-            y: Random.getRandomInt(this._bolidRadius, this._height - this._bolidRadius),
-        };
     }
 }
 

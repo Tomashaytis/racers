@@ -2,8 +2,14 @@ const WebSocket = require('ws');
 const Racer = require('./Racer');
 const Random = require('./Random');
 
-
+/**
+ * Server based on web-sockets
+ */
 class WebSocketServer {
+    /**
+     * Constructor for WebSocketServer object
+     * @param {object} config - config for WebSocketServer object
+     */
     constructor(config) {
         this._port = config.PORT;
         this._maxWatchersCount = config.MAX_WATCHERS_COUNT;
@@ -17,7 +23,7 @@ class WebSocketServer {
         this._colors = config.COLORS;
         this._width = config.WIDTH;
         this._height = config.HEIGHT;
-        this._bolidSize = config.BOLID_SIZE;
+        this._bolideSize = config.BOLIDE_SIZE;
         this._engineOnTtl = config.ENGINE_ON_TTL;
         this._velocityLimit = config.VELOCITY_LIMIT;
         this._botNames = config.BOT_NAMES;
@@ -31,8 +37,13 @@ class WebSocketServer {
         this._star = null;
     }
 
+    /**
+     * listening of server port
+     */
     listen() {
         console.log(`Server is running on port ${this._port}`);
+
+        // When player connecting to server
         this._wss.on('connection', (ws) => {
             const connectionId = this.generateId(); 
             console.log(`User ${connectionId} is trying to connect`);
@@ -49,6 +60,7 @@ class WebSocketServer {
                 ws.close(1008, "Server is overloaded");
             }
 
+            // Sending actual data to client
             const sendIntervalId = setInterval(() => {
                 const data = []
                 this._racers.forEach((racer, id) => {
@@ -67,6 +79,7 @@ class WebSocketServer {
                 }));
             }, this._sendInterval);
 
+            // When server received message from client
             ws.on('message', (message) => {
                 let data = null;
                 try {
@@ -82,7 +95,8 @@ class WebSocketServer {
                     this.sendErrorMessage(ws, 'Internal server error');
                 }
             });
-          
+
+            // When connection has been closed
             ws.on('close', () => {
                 if (this._racers.has(connectionId)) {
                     let index = this._racersNames.indexOf(this._racers.get(connectionId).name);
@@ -106,6 +120,7 @@ class WebSocketServer {
                 clearInterval(sendIntervalId);
             });
 
+            // When connection has been closed with error
             ws.on('error', (error) => {
                 console.log(`Error while working with user ${connectionId}: ${error}`);
                 ws.close(1011, `Internal server error: ${error}`);
@@ -132,15 +147,17 @@ class WebSocketServer {
             });
         });
         
+        // Simulation of player movement
         const simulateIntervalId = setInterval(() => {
             this._racers.forEach((racer, id) => {
                 if (racer.move(this._star)) {
                     this._star = racer.generateStar();
                 }
             });
-            Racer.bolidCollisions(this._racers);
+            Racer.bolideCollisions(this._racers);
         }, this._simulateInterval);
 
+        // Simulation of ai players actions
         const botsIntervalId = setInterval(() => {
             this._racers.forEach((racer, id) => {
                 if (racer.isBot) {
@@ -150,6 +167,11 @@ class WebSocketServer {
         }, this._receiveInterval);
     }
 
+    /**
+     * Sending error message to client
+     * @param {object} ws - web-socket connection
+     * @param {object} message - error message
+     */
     sendErrorMessage(ws, message) {
         ws.send(JSON.stringify({
             type: 'ERROR',
@@ -157,6 +179,12 @@ class WebSocketServer {
         }));
     }
     
+    /**
+     * Processing client messages
+     * @param {*} connectionId - web-socket connection id
+     * @param {*} ws - web-socket connection
+     * @param {*} data - client message
+     */
     handleClientMessage(connectionId, ws, data) {
         if (!data.hasOwnProperty('type')) {
             this.sendErrorMessage(ws, 'Invalid request format');
@@ -217,7 +245,7 @@ class WebSocketServer {
                     avoidedPoints.push(racer.position);
                 });
 
-                this._racers.set(connectionId, new Racer(data.name, data.color, this._bolidSize, this._velocityLimit, this._engineOnTtl, false, this._width, this._height, avoidedPoints));
+                this._racers.set(connectionId, new Racer(data.name, data.color, this._bolideSize, this._velocityLimit, this._engineOnTtl, false, this._width, this._height, avoidedPoints));
                 this._racersNames.push(data.name);
                 this._racersColors.push(data.color);
                 this._playersIds.push(connectionId);
@@ -249,7 +277,7 @@ class WebSocketServer {
                         this._racers.forEach((racer, id) => {
                             avoidedPoints.push(racer.position);
                         });
-                        this._racers.set(this.generateId(), new Racer(botName, botColor, this._bolidSize, this._velocityLimit, this._engineOnTtl, true, this._width, this._height, avoidedPoints));
+                        this._racers.set(this.generateId(), new Racer(botName, botColor, this._bolideSize, this._velocityLimit, this._engineOnTtl, true, this._width, this._height, avoidedPoints));
                         this._racersNames.push(botName);
                         this._racersColors.push(botColor);
                         this._currentBotsCount += 1;
@@ -333,7 +361,11 @@ class WebSocketServer {
                 this.sendErrorMessage(ws, 'Unknown request type');
         }
     }
- 
+
+    /**
+     * Generation of random connection id
+     * @returns random connection id
+     */
     generateId() {
         return Math.random().toString(36).slice(2, 9);
     }

@@ -2,6 +2,11 @@ import './PlayerPanel.css';
 import { ClientApiContext } from '../contexts/ClientApiContext';
 import { useContext, useState } from 'react';
 
+/**
+ * Component for game player panel rendering
+ * @param {object} props - props
+ * @returns jsx
+ */
 function PlayerPanel(props) {
     const clientApi = useContext(ClientApiContext); 
 
@@ -12,7 +17,7 @@ function PlayerPanel(props) {
 
     const existingNames = [];
     let availableColors = structuredClone(props.colors);
-    for (let player of props.players) {
+    for (const player of props.players) {
         existingNames.push(player.name);
         const index = availableColors.indexOf(player.color);
         if (index !== -1 && player.color !== clientApi.playerColor) {

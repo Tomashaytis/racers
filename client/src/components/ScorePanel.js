@@ -2,6 +2,11 @@ import './ScorePanel.css';
 import { ClientApiContext } from '../contexts/ClientApiContext';
 import { useContext } from 'react';
 
+/**
+ * Component for score panel rendering
+ * @param {object} props - props
+ * @returns jsx
+ */
 function ScorePanel(props) {
     const clientApi = useContext(ClientApiContext); 
     let playerScore = '?';

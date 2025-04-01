@@ -2,6 +2,11 @@ import './Results.css';
 import { Flipper, Flipped } from 'react-flip-toolkit';
 import Result from './Result';
 
+/**
+ * Component for results rendering
+ * @param {object} props - props
+ * @returns jsx
+ */
 function Results(props) {
     return (
         <div className="results"> 

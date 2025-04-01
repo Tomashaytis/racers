@@ -1,3 +1,6 @@
+/**
+ * Config file for React App
+ */
 const config = {
     HOST: 'localhost',
     PORT: 5000,
@@ -18,11 +21,11 @@ const config = {
         'lime',
         'indigo',
         'purple',
-        'darkSlateGray',
+        'gray',
         'navy',
         'khaki',
         'coral',
-        'saddleBrown',
+        'brown',
     ],
     FIELD_SIZE: {
         WIDTH: 800,

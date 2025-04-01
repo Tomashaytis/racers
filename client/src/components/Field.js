@@ -2,6 +2,11 @@ import './Field.css';
 import { ClientApiContext } from '../contexts/ClientApiContext';
 import { useContext, useEffect, useRef } from 'react';
 
+/**
+ * Component for game field rendering
+ * @param {object} props - props
+ * @returns jsx
+ */
 function Field(props) {
     const clientApi = useContext(ClientApiContext); 
     const canvasRef = useRef(null);
@@ -15,7 +20,7 @@ function Field(props) {
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        for (let figure of data.figures) {
+        for (const figure of data.figures) {
             if (figure.points.length === 0)
                 continue;
 

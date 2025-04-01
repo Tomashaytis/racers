@@ -1,5 +1,10 @@
 import './Result.css';
 
+/**
+ * Component for result rendering
+ * @param {object} props - props
+ * @returns jsx
+ */
 function Result(props) {
     return (
         <div className="result">

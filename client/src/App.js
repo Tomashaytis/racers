@@ -10,10 +10,13 @@ import { useTimer } from './hooks/useTimer';
 import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 
-
+/**
+ * Main page of React App
+ * @returns jsx
+ */
 function App() {
+    // On role change
     const [role, setRole] = useState(clientApi.role);
-
     useEffect(() => {
         const handler = () => setRole(clientApi.role);
         clientApi.roleCallback = handler;
@@ -22,8 +25,8 @@ function App() {
         };
     }, []);
 
+    // On players change
     const [players, setPlayers] = useState([]);
-
     useEffect(() => {
         const handler = (data) => {
             const playerData = [];
@@ -43,6 +46,7 @@ function App() {
         };
     }, [players]);
 
+    // Starting timer to send current player actions to server
     const handleKeys = useCallback((pressedKeys) => {
         const action = {
             forward: pressedKeys.includes('w'),
@@ -52,7 +56,6 @@ function App() {
         };
         clientApi.action(action);
     }, []);
-
     useTimer(clientApi.sendInterval, handleKeys, role === 'player');
 
     return (

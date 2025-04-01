@@ -1,5 +1,10 @@
 import './InfoPanel.css';
 
+/**
+ * Component for game info panel rendering
+ * @param {object} props - props
+ * @returns jsx
+ */
 function InfoPanel(props) {
     let playersCount = 0;
     let aiPlayersCount = 0;

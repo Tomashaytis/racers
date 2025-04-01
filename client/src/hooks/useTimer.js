@@ -1,5 +1,11 @@
 import { useEffect, useRef } from "react";
 
+/**
+ * Starts timer with some time interval and acion
+ * @param {number} interval - time interval for timer
+ * @param {Function} callback - timer action
+ * @param {boolean} isActive - is timer active now
+ */
 export const useTimer = (interval, callback, isActive) => {
     const timerId = useRef(null);
     const keyState = useRef({

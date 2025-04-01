@@ -1,3 +1,7 @@
+
+/**
+ * Config file for WebSocketServer
+ */
 const config = {
     HOST: 'localhost',
     PORT: 5000,
@@ -8,7 +12,7 @@ const config = {
     RECEIVE_INTERVAL: 250,
     SIMULATE_INTERVAL: 50,
     MAX_NAME_LENGTH: 10,
-    BOLID_SIZE: 2,
+    BOLIDE_SIZE: 2,
     ENGINE_ON_TTL: 7,
     VELOCITY_LIMIT: 8,
     WIDTH: 800,
@@ -27,11 +31,11 @@ const config = {
         'lime',
         'indigo',
         'purple',
-        'darkSlateGray',
+        'gray',
         'navy',
         'khaki',
         'coral',
-        'saddleBrown',
+        'brown',
     ],
     BOT_NAMES: [
         'Jack',
