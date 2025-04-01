@@ -7,11 +7,10 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
-    "io": "^1.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-flip-toolkit": "^7.2.4",
     "react-scripts": "^5.0.1",
-    "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "web-vitals": "^4.2.4"
   },
