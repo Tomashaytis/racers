@@ -58,7 +58,7 @@ class Racer {
             const turnAngle = Random.getRandomDouble(-Math.PI, Math.PI);
             this._direction = Racer.rotate(this._direction, turnAngle);
         } else {
-            this._direction = startPoint;
+            this._direction = startDirection;
         }
         this._normal = Racer.normal(this._direction);
         this.generatePoints();
@@ -464,7 +464,7 @@ class Racer {
 
     /**
      * Generation random star position on the game field 
-     * @returns 
+     * @returns random star position on the game field 
      */
     generateStar() {
         return {
