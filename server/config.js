@@ -1,4 +1,3 @@
-
 /**
  * Config file for WebSocketServer
  */
@@ -7,7 +6,7 @@ const config = {
     PORT: 5000,
     MAX_WATCHERS_COUNT: 20,
     MAX_PLAYERS_COUNT: 10,
-    MAX_BOTS_COUNT: 9,
+    MAX_BOTS_COUNT: 2,
     SEND_INTERVAL: 50,
     RECEIVE_INTERVAL: 250,
     SIMULATE_INTERVAL: 50,
@@ -30,7 +29,6 @@ const config = {
         'tan',
         'lime',
         'indigo',
-        'purple',
         'gray',
         'navy',
         'khaki',

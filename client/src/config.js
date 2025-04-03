@@ -13,7 +13,6 @@ const config = {
         'blue',
         'green',
         'yellow',
-        'purple',
         'maroon',
         'orange',
         'olive',

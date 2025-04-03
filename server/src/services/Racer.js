@@ -201,7 +201,7 @@ class Racer {
     }
 
     /**
-     * Setting engine based of player actions
+     * Setting engine based on player actions
      * @param {object} actions - player actions
      */
     setEngine(actions) {
@@ -231,7 +231,7 @@ class Racer {
     }
 
     /**
-     * Setting engine based of bot actions
+     * Setting engine based on bot actions
      * @param {object} star - coordinates of star
      */
     AutoEngine(star) {
